@@ -1,0 +1,86 @@
+.traffic {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqh;
+  padding: 4cqmin;
+  text-align: center;
+}
+
+.traffic__housing {
+  display: flex;
+  flex-direction: column;
+  gap: 3cqmin;
+  padding: 4cqmin;
+  border-radius: 999px;
+  background: #1f242c;
+}
+
+/* 넓은 위젯은 가로 배치 */
+@container (orientation: landscape) {
+  .traffic__housing {
+    flex-direction: row;
+  }
+  .traffic__lamp {
+    width: min(22cqw, 46cqh);
+  }
+}
+
+.traffic__lamp {
+  --lamp: #555;
+  width: min(52cqw, 20cqh);
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lamp);
+  opacity: 0.22;
+  cursor: pointer;
+  transition: opacity var(--duration-base), box-shadow var(--duration-base);
+}
+
+.traffic__lamp[data-light='red'] { --lamp: #ff3b30; }
+.traffic__lamp[data-light='yellow'] { --lamp: #ffcc00; }
+.traffic__lamp[data-light='green'] { --lamp: #34c759; }
+
+.traffic__lamp.is-on {
+  opacity: 1;
+  box-shadow: 0 0 4cqmin var(--lamp);
+}
+
+.traffic__lamp:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.traffic__label {
+  max-width: 100%;
+  font-weight: 800;
+  line-height: 1.2;
+  font-size: min(9cqh, 13cqw);
+  overflow-wrap: anywhere;
+}
+
+.traffic[data-light='red'] .traffic__label { color: #d92d20; }
+.traffic[data-light='yellow'] .traffic__label { color: #b38600; }
+.traffic[data-light='green'] .traffic__label { color: #1f8f3f; }
+
+:root[data-theme='dark'] .traffic[data-light='red'] .traffic__label,
+:root[data-theme='contrast'] .traffic[data-light='red'] .traffic__label { color: #ff6b62; }
+:root[data-theme='dark'] .traffic[data-light='yellow'] .traffic__label,
+:root[data-theme='contrast'] .traffic[data-light='yellow'] .traffic__label { color: #ffd84d; }
+:root[data-theme='dark'] .traffic[data-light='green'] .traffic__label,
+:root[data-theme='contrast'] .traffic[data-light='green'] .traffic__label { color: #5fdc7f; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .traffic[data-light='red'] .traffic__label { color: #ff6b62; }
+  :root:not([data-theme]) .traffic[data-light='yellow'] .traffic__label { color: #ffd84d; }
+  :root:not([data-theme]) .traffic[data-light='green'] .traffic__label { color: #5fdc7f; }
+}
+
+@container (max-height: 160px) {
+  .traffic__label {
+    display: none;
+  }
+}

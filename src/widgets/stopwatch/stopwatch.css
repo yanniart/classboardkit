@@ -1,0 +1,55 @@
+.stopwatch {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqh;
+  padding: 4cqmin;
+}
+
+.stopwatch__display {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-size: min(30cqh, 20cqw);
+  white-space: nowrap;
+}
+
+.stopwatch__fraction {
+  font-size: 0.5em;
+  color: var(--color-text-muted);
+}
+
+.stopwatch[data-status='paused'] .stopwatch__display {
+  opacity: 0.6;
+}
+
+.stopwatch__laps {
+  width: min(100%, 22rem);
+  max-height: 32cqh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  font-size: clamp(0.8rem, 5cqh, 1.1rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.stopwatch__lap {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.2em 0.5em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stopwatch__lap-time {
+  font-weight: 700;
+}
+
+@container (max-height: 240px) {
+  .stopwatch__laps {
+    display: none;
+  }
+}

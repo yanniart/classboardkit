@@ -1,0 +1,70 @@
+.groups {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2cqh;
+  padding: 3cqmin;
+}
+
+.groups__toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.groups__summary {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: clamp(0.75rem, 4cqh, 1rem);
+}
+
+.groups__grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(7rem, 22cqw), 1fr));
+  gap: clamp(4px, 2cqmin, 12px);
+  overflow-y: auto;
+  align-content: start;
+}
+
+.groups__card {
+  --group-color: var(--team-blue);
+  padding: 0.5em 0.7em;
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--group-color);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  /* 원거리 가독성: 기본 크기 위젯에서 약 18px */
+  font-size: clamp(0.85rem, 6.5cqh, 1.8rem);
+}
+
+.groups__card[data-index='0'] { --group-color: var(--team-red); }
+.groups__card[data-index='1'] { --group-color: var(--team-blue); }
+.groups__card[data-index='2'] { --group-color: var(--team-green); }
+.groups__card[data-index='3'] { --group-color: var(--team-orange); }
+.groups__card[data-index='4'] { --group-color: var(--team-purple); }
+.groups__card[data-index='5'] { --group-color: var(--team-teal); }
+.groups__card[data-index='6'] { --group-color: var(--team-pink); }
+.groups__card[data-index='7'] { --group-color: var(--team-yellow); }
+
+.groups__name {
+  margin: 0 0 0.3em;
+  font-size: 1em;
+  font-weight: 800;
+  color: var(--group-color);
+}
+
+.groups__members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.groups__members li {
+  overflow-wrap: anywhere;
+}

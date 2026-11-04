@@ -1,0 +1,90 @@
+.clock {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2cqh;
+  padding: 4cqmin;
+  text-align: center;
+}
+
+.clock__digital {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  font-size: min(32cqh, 20cqw);
+}
+
+.clock__period {
+  font-size: 0.4em;
+  color: var(--color-text-muted);
+}
+
+.clock__face {
+  display: none;
+  width: min(76cqh, 90cqw);
+  height: min(76cqh, 90cqw);
+}
+
+.clock[data-style='analog'] .clock__digital {
+  display: none;
+}
+
+.clock[data-style='analog'] .clock__face {
+  display: block;
+}
+
+.clock:has(.clock__date:not([hidden]))[data-style='analog'] .clock__face {
+  width: min(66cqh, 90cqw);
+  height: min(66cqh, 90cqw);
+}
+
+.clock__rim {
+  fill: var(--color-surface);
+  stroke: var(--color-border);
+  stroke-width: 2;
+}
+
+.clock__tick {
+  stroke: var(--color-text-muted);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.clock__tick--major {
+  stroke: var(--color-text);
+  stroke-width: 3;
+}
+
+.clock__hand {
+  stroke: var(--color-text);
+  stroke-linecap: round;
+}
+
+.clock__hand--hour {
+  stroke-width: 5;
+}
+
+.clock__hand--minute {
+  stroke-width: 3.5;
+}
+
+.clock__hand--second {
+  stroke: var(--color-danger);
+  stroke-width: 1.5;
+}
+
+.clock__pin {
+  fill: var(--color-danger);
+}
+
+.clock__date {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: min(10cqh, 7cqw);
+}

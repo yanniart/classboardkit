@@ -1,0 +1,258 @@
+/*
+ * 위젯 공통 스타일 (.w-*). 위젯 본문은 컨테이너(container-type: size)이므로
+ * 표시용 글자는 cq 단위로, 설정 패널은 고정 단위로 크기를 정한다.
+ */
+
+/* ── 버튼 ── */
+
+.w-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  padding: 0 clamp(8px, 3cqw, 20px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+  font-size: clamp(0.8rem, 5cqh, 1.25rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.w-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.w-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.w-btn .icon {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.w-btn--icon {
+  padding: 0;
+}
+
+.w-btn--primary {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.w-btn--danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: transparent;
+}
+
+.w-btn--ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.w-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(4px, 2cqw, 12px);
+}
+
+/* 위젯 높이가 낮으면 버튼 문구 숨김 (아이콘만) */
+@container (max-height: 120px) {
+  .w-btn .icon + .w-btn__text {
+    display: none;
+  }
+}
+
+.w-empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: clamp(0.875rem, 6cqmin, 1.25rem);
+}
+
+/* ── 설정 패널 ── */
+
+.w-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+}
+
+.w-panel__header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.w-panel__header .w-btn {
+  font-size: var(--text-sm);
+  min-height: 36px;
+}
+
+.w-panel__title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.w-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  /* 오른쪽 아래 크기 조절 손잡이와 겹치지 않게 */
+  padding-bottom: 40px;
+}
+
+.w-panel .w-btn {
+  font-size: var(--text-sm);
+}
+
+.w-field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.w-field__label {
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.w-field__hint {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.w-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.w-seg__opt {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.w-seg__opt[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.w-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.w-toggle input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-accent);
+}
+
+.w-input,
+.w-textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: var(--text-md);
+}
+
+.w-textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.w-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.w-stepper .w-btn {
+  min-height: 40px;
+  min-width: 40px;
+}
+
+.w-stepper__value {
+  min-width: 2.5rem;
+  text-align: center;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 색상 견본 (팀 색, 글자색) */
+.w-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.w-color {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 1px var(--color-border);
+  background: var(--swatch);
+  cursor: pointer;
+}
+
+.w-color[aria-pressed='true'] {
+  box-shadow: 0 0 0 3px var(--color-accent);
+}
+
+/* 팀·글자 색상 팔레트 (라이트·다크 모두 대비 확보) */
+:root {
+  --team-red: #e5484d;
+  --team-blue: #3e7bfa;
+  --team-green: #2f9e5b;
+  --team-orange: #f08c00;
+  --team-purple: #8e4ec6;
+  --team-teal: #12a594;
+  --team-pink: #d6409f;
+  --team-yellow: #d4a300;
+}

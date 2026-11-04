@@ -1,0 +1,618 @@
+/* ── 레이아웃: 캔버스가 화면 전체, 툴바·독은 위에 떠 있음 ── */
+
+.app {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  /* 새 쌓임 맥락: 위젯 z-index가 툴바·독 위로 올라가지 않게 */
+  z-index: 0;
+  background: var(--color-board);
+  overflow: hidden;
+  outline: none;
+}
+
+/* 고대비 테마는 보드 배경 지정을 무시하고 검정 유지 */
+:root[data-theme='contrast'] .canvas {
+  background: var(--color-board) !important;
+}
+
+.canvas__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.canvas__empty-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.canvas[data-tone='dark'] .canvas__empty,
+.canvas[data-tone='dark'] .canvas__empty-title {
+  color: #ffffff;
+}
+
+.canvas[data-tone='light'] .canvas__empty,
+.canvas[data-tone='light'] .canvas__empty-title {
+  color: #1b2330;
+}
+
+:root[data-theme='contrast'] .canvas .canvas__empty,
+:root[data-theme='contrast'] .canvas .canvas__empty-title {
+  color: var(--color-text);
+}
+
+/* ── 툴바 ── */
+
+.toolbar {
+  position: absolute;
+  top: max(var(--space-3), env(safe-area-inset-top));
+  z-index: var(--z-toolbar);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.toolbar--start {
+  left: max(var(--space-3), env(safe-area-inset-left));
+}
+
+.toolbar--end {
+  right: max(var(--space-3), env(safe-area-inset-right));
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  max-width: 45vw;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.chip--button {
+  cursor: pointer;
+  padding-right: var(--space-3);
+}
+
+.chip__text {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon--sm {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+/* ── 팝오버 (<details> 기반) ── */
+
+.popover {
+  position: relative;
+}
+
+.popover > summary {
+  list-style: none;
+}
+
+.popover > summary::-webkit-details-marker {
+  display: none;
+}
+
+.popover__panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: var(--z-popover);
+  display: grid;
+  gap: var(--space-4);
+  min-width: 15rem;
+  max-height: calc(100dvh - 6rem);
+  overflow-y: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.popover__panel--start {
+  right: auto;
+  left: 0;
+}
+
+.popover__heading {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  margin-bottom: calc(-1 * var(--space-2));
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.field__control {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+}
+
+/* ── 보드 메뉴 ── */
+
+.board-menu {
+  width: min(20rem, calc(100vw - 2 * var(--space-3)));
+}
+
+.board-menu__list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.board-menu__item:hover {
+  background: var(--color-surface-muted);
+}
+
+.board-menu__item[aria-current='true'] {
+  border-color: var(--color-accent);
+  font-weight: 700;
+}
+
+.board-menu__item-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.board-menu__item-count {
+  min-width: 1.5rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.board-menu__item .icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-accent);
+}
+
+.board-menu__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menu-button .icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.menu-button:hover {
+  border-color: var(--color-accent);
+}
+
+.menu-button--danger {
+  color: var(--color-danger);
+}
+
+.menu-button--danger:hover {
+  border-color: var(--color-danger);
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-2);
+}
+
+.swatch {
+  aspect-ratio: 1;
+  min-width: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.swatch--default {
+  background: var(--color-board);
+}
+
+.swatch[aria-pressed='true'] {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── 위젯 프레임 ── */
+
+.widget {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.widget:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+:root[data-theme='contrast'] .widget {
+  border-width: 2px;
+}
+
+.widget__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: var(--touch-min);
+  padding-left: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
+  cursor: grab;
+  /* 터치 드래그 시 스크롤·확대 방지 */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.widget__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget__action {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.widget__action:hover {
+  color: var(--color-text);
+}
+
+.widget__remove:hover {
+  color: var(--color-danger);
+}
+
+.widget__action .icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.widget__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  container-type: size;
+}
+
+.widget__resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  height: 32px;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+/* 오른쪽 아래 모서리 눈금 */
+.widget__resize::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 12px;
+  height: 12px;
+  border-right: 3px solid var(--color-border);
+  border-bottom: 3px solid var(--color-border);
+  border-bottom-right-radius: 4px;
+}
+
+.widget:hover .widget__resize::after,
+.widget:focus-within .widget__resize::after {
+  border-color: var(--color-text-muted);
+}
+
+.widget.is-moving {
+  cursor: grabbing;
+  box-shadow: 0 16px 40px rgb(20 30 50 / 0.25);
+}
+
+.widget.is-moving .widget__bar {
+  cursor: grabbing;
+}
+
+.widget.is-moving,
+.widget.is-resizing {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.widget__unsupported {
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ── 독 ── */
+
+.dock {
+  position: absolute;
+  left: 50%;
+  bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  z-index: var(--z-dock);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: calc(100vw - 2 * var(--space-3));
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-md);
+}
+
+.dock__items {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+}
+
+.dock__item {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 64px;
+  min-height: 56px;
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+}
+
+.dock__item:hover {
+  background: var(--color-surface-muted);
+}
+
+.dock__item:active {
+  transform: scale(0.96);
+}
+
+.dock__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.dock__toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  min-height: 56px;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.dock__toggle .icon {
+  transition: transform var(--duration-base) ease;
+}
+
+.dock.is-collapsed .dock__toggle {
+  border-left: 0;
+  min-height: 36px;
+}
+
+.dock.is-collapsed .dock__toggle .icon {
+  transform: rotate(180deg);
+}
+
+/* ── 대화상자 ── */
+
+.dialog {
+  width: min(24rem, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-md);
+}
+
+.dialog[open] {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.dialog::backdrop {
+  background: rgb(10 15 25 / 0.45);
+}
+
+.dialog__title {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.dialog__message {
+  color: var(--color-text-muted);
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.button {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button--primary {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.button--danger {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  color: #ffffff;
+}
+
+/* ── 알림 ── */
+
+.notices {
+  position: absolute;
+  top: calc(var(--touch-min) + var(--space-6));
+  left: 50%;
+  z-index: var(--z-notice);
+  transform: translateX(-50%);
+  display: grid;
+  gap: var(--space-2);
+  width: min(32rem, calc(100vw - 2 * var(--space-3)));
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.notice__text {
+  flex: 1;
+  padding-top: var(--space-2);
+}
+
+.notice__close {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.notice__close:hover {
+  background: var(--color-surface-muted);
+}

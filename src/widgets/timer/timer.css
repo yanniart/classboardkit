@@ -1,0 +1,118 @@
+.timer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqh;
+  padding: 4cqmin;
+  text-align: center;
+}
+
+.timer__face {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.timer__display {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-size: min(34cqh, 26cqw);
+}
+
+/* 시각 모드: 줄어드는 원 */
+.timer__ring {
+  display: none;
+}
+
+.timer[data-mode='visual'] .timer__face {
+  width: min(62cqh, 80cqw);
+  aspect-ratio: 1;
+}
+
+.timer[data-mode='visual'] .timer__ring {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer[data-mode='visual'] .timer__display {
+  font-size: min(15cqh, 17cqw);
+}
+
+.timer__ring-track,
+.timer__ring-value {
+  fill: none;
+  stroke-width: 9;
+}
+
+.timer__ring-track {
+  stroke: var(--color-surface-muted);
+}
+
+.timer__ring-value {
+  stroke: var(--color-accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.2s linear, stroke 0.3s;
+}
+
+.timer[data-status='idle'] .timer__ring-value {
+  transition: none;
+}
+
+.timer[data-urgent='true'] .timer__display {
+  color: var(--color-danger);
+}
+
+.timer[data-urgent='true'] .timer__ring-value {
+  stroke: var(--color-danger);
+}
+
+.timer[data-status='paused'] .timer__display {
+  opacity: 0.6;
+}
+
+.timer[data-status='done'] .timer__display {
+  color: var(--color-danger);
+  animation: timer-blink 1s steps(2, jump-none) infinite;
+}
+
+.timer__status:empty {
+  display: none;
+}
+
+.timer__status {
+  font-weight: 700;
+  color: var(--color-danger);
+  font-size: clamp(0.875rem, 7cqh, 1.5rem);
+}
+
+.timer__inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.timer__num {
+  width: 4.5rem;
+  text-align: center;
+}
+
+/* 위젯이 낮으면 조정 버튼 숨김 */
+@container (max-height: 220px) {
+  .timer__adjust {
+    display: none;
+  }
+}
+
+@keyframes timer-blink {
+  50% {
+    opacity: 0.25;
+  }
+}

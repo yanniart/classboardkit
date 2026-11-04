@@ -1,0 +1,86 @@
+.text-widget {
+  --text-scale: 1;
+  position: relative;
+  height: 100%;
+}
+
+.text-widget[data-size='s'] {
+  --text-scale: 0.6;
+}
+.text-widget[data-size='l'] {
+  --text-scale: 1.5;
+}
+.text-widget[data-size='xl'] {
+  --text-scale: 2.2;
+}
+
+.text-widget__input {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 4cqmin 5cqmin;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  /* 원거리 가독성(NFR-006): 기본 크기 위젯에서 약 24px부터 시작 */
+  font-size: calc(var(--text-scale) * 16cqmin);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.text-widget[data-align='left'] .text-widget__input {
+  text-align: left;
+}
+.text-widget[data-align='right'] .text-widget__input {
+  text-align: right;
+}
+
+.text-widget[data-color='red'] .text-widget__input { color: var(--team-red); }
+.text-widget[data-color='blue'] .text-widget__input { color: var(--team-blue); }
+.text-widget[data-color='green'] .text-widget__input { color: var(--team-green); }
+.text-widget[data-color='orange'] .text-widget__input { color: var(--team-orange); }
+.text-widget[data-color='purple'] .text-widget__input { color: var(--team-purple); }
+
+.text-widget__input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+.text-widget__tools {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity var(--duration-base) ease;
+}
+
+.widget:hover .text-widget__tools,
+.widget:focus-within .text-widget__tools {
+  opacity: 1;
+}
+
+.text-widget__tool {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.text-widget__tool:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.text-widget__tool .icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}

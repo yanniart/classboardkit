@@ -1,0 +1,114 @@
+/*
+ * 디자인 토큰.
+ * 테마는 <html data-theme="light|dark|contrast">로 지정하고,
+ * 속성이 없으면(system) OS 설정(prefers-color-scheme)을 따른다.
+ */
+
+:root {
+  /* 타이포그래피 */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Malgun Gothic',
+    'Noto Sans KR', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+
+  /* 간격 (4px 단위) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* 형태 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  /* 터치 타깃 최소 크기 (NFR-002) */
+  --touch-min: 44px;
+
+  /* 레이어 순서 */
+  --z-widget: 1;
+  --z-toolbar: 100;
+  --z-dock: 100;
+  --z-popover: 200;
+  --z-notice: 300;
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+
+  /* 색상: 라이트 (기본) */
+  --color-bg: #eef2f7;
+  --color-board: linear-gradient(135deg, #dfe9f7 0%, #f3e8f4 100%);
+  --color-surface: #ffffff;
+  --color-surface-muted: #f4f6f9;
+  --color-text: #1b2330;
+  --color-text-muted: #5b6676;
+  --color-border: #d5dbe4;
+  --color-accent: #2f6fdc;
+  --color-accent-contrast: #ffffff;
+  --color-focus: #2f6fdc;
+  --color-danger: #c62828;
+  --shadow-sm: 0 1px 2px rgb(20 30 50 / 0.08), 0 1px 3px rgb(20 30 50 / 0.06);
+  --shadow-md: 0 6px 20px rgb(20 30 50 / 0.12), 0 2px 6px rgb(20 30 50 / 0.08);
+  --glass: rgb(255 255 255 / 0.78);
+}
+
+/* 다크 토큰 — system(다크 OS)과 명시적 dark에 동일 적용 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg: #10141b;
+    --color-board: linear-gradient(135deg, #172133 0%, #221a2e 100%);
+    --color-surface: #1c2330;
+    --color-surface-muted: #252e3d;
+    --color-text: #e8edf4;
+    --color-text-muted: #a3aebd;
+    --color-border: #344055;
+    --color-accent: #6ea1ff;
+    --color-accent-contrast: #0b1220;
+    --color-focus: #8fb6ff;
+    --color-danger: #ff6b6b;
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 8px 24px rgb(0 0 0 / 0.45);
+    --glass: rgb(28 35 48 / 0.82);
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #10141b;
+  --color-board: linear-gradient(135deg, #172133 0%, #221a2e 100%);
+  --color-surface: #1c2330;
+  --color-surface-muted: #252e3d;
+  --color-text: #e8edf4;
+  --color-text-muted: #a3aebd;
+  --color-border: #344055;
+  --color-accent: #6ea1ff;
+  --color-accent-contrast: #0b1220;
+  --color-focus: #8fb6ff;
+  --color-danger: #ff6b6b;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 8px 24px rgb(0 0 0 / 0.45);
+  --glass: rgb(28 35 48 / 0.82);
+}
+
+/* 고대비: 순수 흑백 + 두꺼운 테두리 */
+:root[data-theme='contrast'] {
+  --color-bg: #000000;
+  --color-board: #000000;
+  --color-surface: #000000;
+  --color-surface-muted: #000000;
+  --color-text: #ffffff;
+  --color-text-muted: #ffffff;
+  --color-border: #ffffff;
+  --color-accent: #ffeb3b;
+  --color-accent-contrast: #000000;
+  --color-focus: #ffeb3b;
+  --color-danger: #ff8a80;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --glass: #000000;
+}

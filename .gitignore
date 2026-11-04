@@ -1,0 +1,12 @@
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+node_modules/
+*.log
+
+# 로컬 도구 (포터블 Node 등)
+.tools/
+
+# E2E 스크린샷
+tools/e2e/out/

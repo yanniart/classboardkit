@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <meta name="description" content="Offline-first classroom widget board. No sign-up, no server." />
+    <meta name="color-scheme" content="light dark" />
+    <title>ClassBoardKit</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="src/styles/tokens.css" />
+    <link rel="stylesheet" href="src/styles/base.css" />
+    <link rel="stylesheet" href="src/styles/app.css" />
+    <link rel="stylesheet" href="src/styles/widgets.css" />
+    <script type="module" src="src/main.js"></script>
+  </head>
+  <body>
+    <div class="app" id="app">
+      <main class="canvas" id="canvas" tabindex="-1" data-i18n-aria-label="board.canvasLabel">
+        <div class="canvas__empty" id="canvas-empty">
+          <svg class="icon icon--xl" aria-hidden="true"><use href="assets/icons.svg#board"></use></svg>
+          <p class="canvas__empty-title" data-i18n="board.empty.title"></p>
+          <p class="canvas__empty-body" data-i18n="board.empty.body"></p>
+        </div>
+      </main>
+
+      <div class="toolbar toolbar--start">
+        <details class="popover" id="board-menu">
+          <summary class="chip chip--button" data-i18n-title="board.menu">
+            <span class="chip__text" id="board-name"></span>
+            <svg class="icon icon--sm" aria-hidden="true"><use href="assets/icons.svg#chevron-down"></use></svg>
+          </summary>
+          <div class="popover__panel popover__panel--start board-menu">
+            <p class="popover__heading" data-i18n="board.menu"></p>
+            <ul class="board-menu__list" id="board-list"></ul>
+            <div class="board-menu__actions" id="board-actions">
+              <button type="button" class="menu-button" data-action="new">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#plus"></use></svg>
+                <span data-i18n="board.new"></span>
+              </button>
+              <button type="button" class="menu-button" data-action="rename">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg>
+                <span data-i18n="board.rename"></span>
+              </button>
+              <button type="button" class="menu-button" data-action="duplicate">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy"></use></svg>
+                <span data-i18n="board.duplicate"></span>
+              </button>
+              <button type="button" class="menu-button menu-button--danger" data-action="delete">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#trash"></use></svg>
+                <span data-i18n="board.delete"></span>
+              </button>
+            </div>
+            <p class="popover__heading" data-i18n="board.background"></p>
+            <div class="swatches" id="background-swatches"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="toolbar toolbar--end">
+        <details class="popover" id="settings">
+          <summary class="icon-button" data-i18n-aria-label="settings.open" data-i18n-title="settings.open">
+            <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#sliders"></use></svg>
+          </summary>
+          <div class="popover__panel">
+            <label class="field">
+              <span class="field__label" data-i18n="settings.language"></span>
+              <select class="field__control" id="setting-locale"></select>
+            </label>
+            <label class="field">
+              <span class="field__label" data-i18n="settings.theme"></span>
+              <select class="field__control" id="setting-theme"></select>
+            </label>
+          </div>
+        </details>
+      </div>
+
+      <nav class="dock" id="dock" data-i18n-aria-label="dock.label"></nav>
+
+      <div class="notices" id="notices" role="status" aria-live="polite"></div>
+    </div>
+
+    <noscript>
+      <p class="noscript">ClassBoardKit needs JavaScript to run.</p>
+    </noscript>
+  </body>
+</html>
