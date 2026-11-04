@@ -79,7 +79,7 @@ python -m http.server 8765 --bind 127.0.0.1   # 백그라운드
 - CHANGELOG: `[Unreleased]` → `[0.1.0] - YYYY-MM-DD`
 - `package.json` version 0.1.0
 - PRD 릴리스 범위 확인, ROADMAP M3 완료 표시, QA 체크리스트 8절(M3) 추가
-- **git 커밋·태그·원격 저장소·Pages 배포는 사용자 승인 후** (현재까지 커밋 0개, 사용자 "차후 진행" 결정)
+- **git 커밋·태그·원격 저장소·Pages 배포는 사용자 승인 후** (로컬 커밋만 있음, 원격 저장소 연결은 사용자 "차후 진행" 결정)
 
 ## 2. E2E `tools/e2e/m3.mjs` (신규)
 - 내보내기: `Browser.setDownloadBehavior({ behavior: 'allow', downloadPath: OUT_DIR, eventsEnabled: true })` → 버튼 클릭 → `Browser.downloadProgress` completed → 파일 JSON 검증
