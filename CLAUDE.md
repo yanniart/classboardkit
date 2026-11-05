@@ -17,16 +17,22 @@
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
 
 ## 현재 상태 (2026-11-05)
-- M0~M3 완료 → **v0.1.0 출시** (2026-11-05, 태그 `v0.1.0`, https://yanniart.github.io/classboardkit/, 릴리스 노트 `docs/releases/v0.1.0.md`)
-- 위젯 8종 + 내보내기/가져오기 + 전체 화면·화면 켜두기 + PWA 오프라인
-- 단위 테스트 128개, E2E m1 34 · m2 36 · m3 44 통과 (로컬·배포 URL 모두), Lighthouse(배포) 데스크톱 99/100/100 · 모바일 100/100/100
-- 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등, `tools/e2e/pwa-remote.mjs`
-- 사용자 작업 대기: GitHub Release 페이지 작성, Labels·Milestones
-- 미완료: 실기기 QA(iPad Safari·macOS Safari·Firefox — qa-checklist 8절), 서비스명 상표 확인
-- **M4 위젯 확장 → v0.2.0 출시 (2026-11-05, 태그 `v0.2.0`, 배포 URL E2E 192항목·Lighthouse 100/100/100)** → 위젯 14종(+주사위·카운트다운·그리기·이미지·소음·QR), 사용자 이미지 배경, 이미지 포함 백업, IndexedDB(ADR-0007), QR 벤더링(ADR-0006)
-  - 단위 164개, E2E m1 34 · m2 36 · m3 44 · m4 72, Lighthouse 로컬 데스크톱 99 · 모바일 93
-  - 남은 것: GitHub Release 페이지(사용자), 실기기 QA(qa-checklist 8·9절). **다음: M5** → [docs/roadmap/M5-plan.md](docs/roadmap/M5-plan.md) ("m5 진행해줘" → 확인 질문 없이 바로 1절부터, `m5` 브랜치)
-  - 릴리스 노트 `docs/releases/v0.2.0.md`, 개발 로그 `docs/devlog/2026/2026-11-05-m4.md`
+- **v0.2.0 출시** (M0~M4 완료, 태그 `v0.1.0`·`v0.2.0`, https://yanniart.github.io/classboardkit/)
+  - 위젯 14종, 보드 관리·배경(내 이미지 포함), 이미지 포함 백업, 전체 화면·화면 켜두기, PWA 오프라인, ko/en, 테마 4종
+  - 기준선: 단위 **164개**, E2E m1 **34** · m2 **36** · m3 **44** · m4 **72** (로컬·배포 URL 모두 통과), Lighthouse(배포) 100/100/100
+  - 릴리스 노트 `docs/releases/v0.1.0.md`·`v0.2.0.md`, 개발 로그 `docs/devlog/2026/`
+- 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등(m1~m4), `tools/e2e/pwa-remote.mjs`
+- 사용자 작업 대기: GitHub Release 페이지(v0.2.0, 본문 = `docs/releases/v0.2.0.md`), Labels·Milestones
+- 미완료: 실기기 QA(qa-checklist 8·9절 — iPad·Safari·Firefox, QR 휴대폰 스캔), 서비스명 상표 확인
+- 로컬 `m4` 브랜치는 `main`에 병합 완료 (남아 있어도 무방)
+
+## ▶ 다음 작업: M5 (공유·템플릿·실행 취소 → v0.3.0)
+- 계획서: [docs/roadmap/M5-plan.md](docs/roadmap/M5-plan.md) (커밋 `066457a`, 결정 D1~D8 = 권장안)
+- **사용자가 "m5 진행해줘"라고 하면 확인 질문 없이 바로 시작**:
+  1. `git switch -c m5` (main에서) → `.tools/node/node.exe --test`(164) → 8765 서버 백그라운드 → E2E m1~m4 기준선 확인
+  2. 계획서 3-0 → 3-1 … 3-6 순서대로. 계획에 없는 선택은 권장안 → devlog "결정 사항"
+  3. 끝나면 단위 + E2E(m1~m5) + 스크린샷 + Lighthouse → 문서 갱신 → 보고
+- 커밋·병합·푸시(배포)·태그는 **사용자가 요청할 때만** (M4 때 흐름: "커밋해줘" → "병합하고 배포해줘" → "문서 반영하고 태그 달아줘")
 
 ## 환경 (Windows)
 - **시스템에 Node.js 없음.** 포터블 Node를 `.tools/node/node.exe`(git 제외)에 둠
