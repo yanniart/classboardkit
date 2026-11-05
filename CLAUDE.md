@@ -13,6 +13,7 @@
 - **git 커밋·푸시·태그는 사용자가 요청할 때만**. 원격: `origin` = https://github.com/yanniart/classboardkit (공개), `main` 푸시 = Pages 자동 배포 → https://yanniart.github.io/classboardkit/
 - 이 PC에 `gh` CLI 없음 → GitHub 웹 작업(Release·Settings·Labels)은 사용자에게 요청. 공개 API(curl)로 Actions 상태 확인 가능:
   `curl -s "https://api.github.com/repos/yanniart/classboardkit/actions/runs?per_page=3"`
+- 계획에 없는 선택은 권장안으로 정하고 진행 → devlog "결정 사항"에 기록 (사용자가 권장안 위임을 선호, 2026-11-05)
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
 
 ## 현재 상태 (2026-11-05)
@@ -22,7 +23,7 @@
 - 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등, `tools/e2e/pwa-remote.mjs`
 - 사용자 작업 대기: GitHub Release 페이지 작성, Labels·Milestones
 - 미완료: 실기기 QA(iPad Safari·macOS Safari·Firefox — qa-checklist 8절), 서비스명 상표 확인
-- 다음 마일스톤: M4 위젯 확장 (계획서 `docs/roadmap/M4-plan.md` 아직 없음 → 먼저 작성)
+- **다음: M4 위젯 확장** → [docs/roadmap/M4-plan.md](docs/roadmap/M4-plan.md) ("m4 진행해줘" → 확인 질문 없이 바로 1절부터. 결정 4건 확정됨, `m4` 브랜치에서 작업)
 
 ## 환경 (Windows)
 - **시스템에 Node.js 없음.** 포터블 Node를 `.tools/node/node.exe`(git 제외)에 둠
