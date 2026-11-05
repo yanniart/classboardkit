@@ -109,11 +109,12 @@
 
 ## 8. 릴리스 범위
 - **v0.1.0 (MVP)**: F-001~F-006, F-008, F-101~F-108 (+ Should 항목 가능한 범위)
+  - 2026-11-05 구현 완료: Must 전부 + Should F-009(전체 화면·화면 켜두기)·F-010(PWA 오프라인)·F-011(테마)
 - 상세 일정: [ROADMAP](../roadmap/ROADMAP.md)
 
 ## 9. 미결 사항
 - [ ] 서비스명 "ClassBoardKit" 중복·상표 확인 [검토] (2026-11-04 BoardKit에서 변경)
 - [x] 라이선스 확정 → MIT (ADR-0005)
 - [x] 아이콘 세트 → 자체 제작 SVG 스프라이트 (`assets/icons.svg`, 외부 라이선스 의존 없음)
-- [ ] iPadOS Safari의 Fullscreen·Wake Lock 지원 범위 실기기 확인 [검토]
+- [ ] iPadOS Safari의 Fullscreen·Wake Lock 지원 범위 실기기 확인 [검토] — 구현은 기능 감지로 미지원 시 버튼 숨김(webkit 접두어 포함), 실기기 확인만 남음
 - [ ] 배포 도메인 (`<user>.github.io/classboardkit` 또는 커스텀 도메인)

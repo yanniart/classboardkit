@@ -8,6 +8,8 @@ import { messages, localeNames, FALLBACK_LOCALE } from './locales/index.js';
 import { createDefaultRegistry } from './widgets/index.js';
 import { mountShell } from './ui/shell.js';
 import { mountBoardMenu } from './ui/board-menu.js';
+import { mountDisplayControls } from './ui/display-controls.js';
+import { isStandalone, registerServiceWorker, requestPersistentStorage } from './ui/updates.js';
 import { mountCanvas } from './ui/canvas.js';
 import { mountDock } from './ui/dock.js';
 import { installPopoverBehavior } from './ui/popover.js';
@@ -84,7 +86,8 @@ function boot() {
 
   // 셸이 먼저 구독해야 언어 변경이 다른 모듈보다 먼저 반영된다
   const shell = mountShell({ root, store, i18n, localeNames });
-  mountBoardMenu({ root, store, i18n });
+  mountBoardMenu({ root, store, i18n, notify: shell.notify });
+  mountDisplayControls({ root, store, i18n, notify: shell.notify });
   const board = mountCanvas({ canvas, emptyState, store, registry, i18n });
   mountDock({ dock, store, registry, i18n, onAdded: (id) => board.focusWidget(id) });
   installPopoverBehavior(root);
@@ -112,6 +115,10 @@ function boot() {
     if (document.visibilityState === 'hidden') autoSave.flush();
   });
   window.addEventListener('pagehide', () => autoSave.flush());
+
+  // 오프라인 지원: 앱이 정상 시작된 뒤에 등록 (첫 화면 로딩과 경쟁하지 않게)
+  registerServiceWorker({ notify: shell.notify });
+  if (persistent && isStandalone()) requestPersistentStorage();
 }
 
 boot();

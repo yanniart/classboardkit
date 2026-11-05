@@ -122,6 +122,20 @@ export function duplicateBoard(state, boardId, name, now = new Date()) {
 }
 
 /**
+ * 가져온 보드를 기존 보드 뒤에 추가하고 첫 번째 가져온 보드를 활성화한다.
+ * 보드 ID는 호출 전에 새로 발급되어 있어야 한다 (transfer.parseImport).
+ * @param {AppState} state
+ * @param {any[]} boards
+ */
+export function importBoards(state, boards) {
+  if (boards.length === 0) return state;
+  return withSettings(
+    { ...state, boards: [...state.boards, ...boards] },
+    { activeBoardId: boards[0].id },
+  );
+}
+
+/**
  * 보드를 삭제한다. 마지막 보드를 지우면 빈 보드를 새로 만든다.
  * 활성 보드를 지우면 같은 위치(없으면 이전) 보드를 활성화한다.
  *

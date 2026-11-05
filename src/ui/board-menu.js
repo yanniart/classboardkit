@@ -3,30 +3,54 @@ import {
   deleteBoard,
   duplicateBoard,
   getActiveBoard,
+  importBoards,
   renameBoard,
   setActiveBoard,
   setBackground,
 } from '../core/board-ops.js';
 import { BACKGROUND_PRESETS, resolveBackground } from '../core/backgrounds.js';
+import {
+  MAX_IMPORT_SIZE,
+  createExport,
+  daysSince,
+  exportFileName,
+  parseImport,
+  serializeExport,
+} from '../core/transfer.js';
 import { openDialog } from './dialog.js';
+import { requestPersistentStorage } from './updates.js';
 import { h, icon } from './dom.js';
 
+/** 가져오기 오류 코드 → 알림 메시지 키 */
+const IMPORT_ERRORS = {
+  'too-large': 'transfer.error.tooLarge',
+  'not-json': 'transfer.error.notJson',
+  'wrong-app': 'transfer.error.wrongApp',
+  'newer-version': 'transfer.error.newerVersion',
+  invalid: 'transfer.error.invalid',
+  empty: 'transfer.error.empty',
+};
+
 /**
- * 보드 메뉴 (F-004 보드 관리, F-006 배경).
+ * 보드 메뉴 (F-004 보드 관리, F-005 내보내기/가져오기, F-006 배경).
  *
  * @param {{
  *   root: HTMLElement,
  *   store: ReturnType<typeof import('../core/store.js').createStore>,
  *   i18n: ReturnType<typeof import('../core/i18n.js').createI18n>,
+ *   notify: ReturnType<typeof import('./shell.js').mountShell>['notify'],
  * }} deps
  */
-export function mountBoardMenu({ root, store, i18n }) {
+export function mountBoardMenu({ root, store, i18n, notify }) {
   const el = {
     details: /** @type {HTMLDetailsElement} */ (root.querySelector('#board-menu')),
     name: /** @type {HTMLElement} */ (root.querySelector('#board-name')),
     list: /** @type {HTMLElement} */ (root.querySelector('#board-list')),
     swatches: /** @type {HTMLElement} */ (root.querySelector('#background-swatches')),
     actions: /** @type {HTMLElement} */ (root.querySelector('#board-actions')),
+    transfer: /** @type {HTMLElement} */ (root.querySelector('#board-transfer')),
+    backupStatus: /** @type {HTMLElement} */ (root.querySelector('#board-backup-status')),
+    file: /** @type {HTMLInputElement} */ (root.querySelector('#import-file')),
   };
   const { t } = i18n;
   const close = () => (el.details.open = false);
@@ -81,11 +105,97 @@ export function mountBoardMenu({ root, store, i18n }) {
     },
   };
 
-  el.actions.addEventListener('click', (event) => {
-    const button = /** @type {HTMLElement} */ (event.target).closest('[data-action]');
-    const action = button && /** @type {HTMLElement} */ (button).dataset.action;
-    if (action && action in actions) void actions[/** @type {keyof typeof actions} */ (action)]();
+  /**
+   * JSON 파일을 내려받게 한다 (CSP img/blob 허용 범위 내 <a download>).
+   * @param {any[]} boards
+   * @param {string | null} name null이면 전체 내보내기
+   */
+  function download(boards, name) {
+    const { settings } = store.getState();
+    const now = new Date();
+    const data = createExport(boards, { now, ...(name === null ? { settings } : {}) });
+    const file = exportFileName(name, now);
+    const url = URL.createObjectURL(new Blob([serializeExport(data)], { type: 'application/json' }));
+    const link = h('a', { attrs: { href: url, download: file } });
+    document.body.append(link);
+    link.click();
+    link.remove();
+    // 일부 브라우저는 클릭 직후 해제하면 다운로드가 취소됨 → 잠시 뒤 해제
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    store.update((s) => ({ ...s, settings: { ...s.settings, lastExportAt: now.toISOString() } }));
+    notify('transfer.exported', { type: 'info', params: { file } });
+    requestPersistentStorage();
+  }
+
+  /** @param {File} file */
+  async function importFile(file) {
+    let text;
+    try {
+      // 크기 확인은 읽기 전에 먼저 (거대한 파일을 메모리에 올리지 않음)
+      if (file.size > MAX_IMPORT_SIZE) {
+        notify('transfer.error.tooLarge');
+        return;
+      }
+      text = await file.text();
+    } catch {
+      notify('transfer.error.read');
+      return;
+    }
+    const result = parseImport(text);
+    if (!result.ok) {
+      console.info('[import]', result.error, result.detail);
+      notify(IMPORT_ERRORS[result.error]);
+      return;
+    }
+    store.update((s) => importBoards(s, result.boards));
+    notify('transfer.imported', { type: 'info', params: { n: result.boards.length } });
+  }
+
+  const transferActions = {
+    async export() {
+      const board = getActiveBoard(store.getState());
+      if (!board) return;
+      close();
+      download([board], board.name);
+    },
+    async exportAll() {
+      close();
+      download(store.getState().boards, null);
+    },
+    async import() {
+      close();
+      el.file.click();
+    },
+  };
+
+  el.file.addEventListener('change', () => {
+    const file = el.file.files?.[0];
+    // 같은 파일을 다시 고를 수 있도록 비운다
+    el.file.value = '';
+    if (file) void importFile(file);
   });
+
+  /**
+   * @param {HTMLElement} container
+   * @param {Record<string, () => Promise<void>>} handlers
+   */
+  function delegate(container, handlers) {
+    container.addEventListener('click', (event) => {
+      const button = /** @type {HTMLElement} */ (event.target).closest('[data-action]');
+      const action = button && /** @type {HTMLElement} */ (button).dataset.action;
+      if (action && Object.hasOwn(handlers, action)) void handlers[action]();
+    });
+  }
+  delegate(el.actions, actions);
+  delegate(el.transfer, transferActions);
+
+  function renderBackupStatus() {
+    const days = daysSince(store.getState().settings.lastExportAt);
+    el.backupStatus.textContent =
+      days === null ? t('board.backup.never') : days === 0 ? t('board.backup.today') : t('board.backup.daysAgo', { n: days });
+    // 백업한 적 없거나 2주 이상 지났으면 강조
+    el.backupStatus.classList.toggle('board-menu__backup--stale', days === null || days >= 14);
+  }
 
   function renderList() {
     const state = store.getState();
@@ -139,6 +249,7 @@ export function mountBoardMenu({ root, store, i18n }) {
     el.name.textContent = board?.name ?? '';
     renderList();
     renderSwatches();
+    renderBackupStatus();
   }
 
   store.subscribe((next, prev) => {

@@ -2,9 +2,9 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| ready | 1.0 | 2026-11-04 | @owner |
+| done | 1.1 | 2026-11-05 | @owner |
 
-> 다음 세션에서 "m3 진행해줘"라고 하면 이 문서 순서대로 바로 진행한다.
+> **2026-11-05 완료** — 결과: [개발 로그](../devlog/2026/2026-11-05-m3.md). 계획과 달라진 점: SW 목록·버전은 수동 관리 대신 `tools/sw-stamp.mjs` 생성(해시), 오프라인 E2E는 네트워크 에뮬레이션 대신 자체 서버 종료, modulepreload는 효과 없어 미적용, 태그·배포는 사용자 승인 대기.
 > 범위: F-005(내보내기/가져오기), F-009(전체 화면·화면 꺼짐 방지), F-010(PWA 오프라인), Lighthouse 90+, v0.1.0 준비.
 > F-011(테마)은 M0에서 이미 완료.
 
@@ -90,12 +90,12 @@ python -m http.server 8765 --bind 127.0.0.1   # 백그라운드
 - M1·M2 회귀 실행
 
 ## 3. 완료 기준 (DoD)
-- [ ] 단위 테스트 전부 통과 (신규: transfer, sw-manifest)
-- [ ] E2E m1·m2·m3 전부 통과, 콘솔 오류 0
-- [ ] 오프라인 새로고침 동작
-- [ ] Lighthouse Performance·Accessibility·Best Practices 각 90+
-- [ ] 문서 갱신: PRD 미결·TRD(transfer·PWA·SW 목록 규칙)·data-schema(settings.lastExportAt/keepAwake 추가 시)·ROADMAP·QA·devlog·CHANGELOG·README
-- [ ] v0.1.0 릴리스 노트 초안 (태그는 사용자 승인 후)
+- [x] 단위 테스트 전부 통과 (신규: transfer, sw-manifest) — 128개
+- [x] E2E m1·m2·m3 전부 통과, 콘솔 오류 0 — 34·36·44
+- [x] 오프라인 새로고침 동작 (서버 종료 상태에서 검증)
+- [x] Lighthouse Performance·Accessibility·Best Practices 각 90+ — 데스크톱 100/100/100, 모바일 93/100/100
+- [x] 문서 갱신: PRD 미결·TRD(transfer·PWA·SW 목록 규칙)·data-schema(settings.lastExportAt/keepAwake 추가 시)·ROADMAP·QA·devlog·CHANGELOG·README
+- [x] v0.1.0 릴리스 노트 초안 (태그는 사용자 승인 후) — `docs/releases/v0.1.0.md`
 
 ## 4. 리스크
 | 리스크 | 대응 |

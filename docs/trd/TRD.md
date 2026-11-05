@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.1 | 2026-11-04 | @owner |
+| draft | 0.2 | 2026-11-05 | @owner |
 
 관련 문서: [PRD](../prd/PRD.md) · [데이터 스키마](data-schema.md) · [ADR 목록](adr/)
 
@@ -22,7 +22,7 @@
 ## 2. 아키텍처
 
 ```
-index.html
+index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체)
   └─ src/main.js ─ 앱 부트스트랩
        ├─ core/
        │   ├─ store.js        단일 상태 저장소 (get / update / subscribe)
@@ -32,13 +32,16 @@ index.html
        │   ├─ board-ops.js    보드·위젯 상태 변경 순수 함수 (추가/삭제/이동/z-order/복제…)
        │   ├─ geometry.js     비율 좌표 이동·크기 조절·배치 계산
        │   ├─ backgrounds.js  배경 프리셋, 밝기(tone) 판정
+       │   ├─ transfer.js     내보내기 파일 생성, 가져오기 파싱·검증·새 ID 발급, 파일명
        │   ├─ i18n.js         메시지 조회, 언어 감지
        │   └─ utils/          id, debounce, memory-storage, sound(Web Audio)
        ├─ ui/
-       │   ├─ shell.js        언어·테마 설정, 정적 문구 번역, 알림
+       │   ├─ shell.js        언어·테마 설정, 정적 문구 번역, 알림(error/info, 매개변수, 액션 버튼)
        │   ├─ canvas.js       위젯 프레임 렌더, 드래그·리사이즈·키보드 (Pointer Events)
        │   ├─ dock.js         위젯 독, 접기
-       │   ├─ board-menu.js   보드 목록·관리, 배경 선택
+       │   ├─ board-menu.js   보드 목록·관리, 배경 선택, 내보내기/가져오기, 마지막 백업 표시
+       │   ├─ display-controls.js  전체 화면·화면 켜두기 (기능 감지, 미지원 시 숨김)
+       │   ├─ updates.js      서비스 워커 등록, 새 버전 알림, 저장소 영구 보관 요청
        │   ├─ dialog.js       <dialog> 확인·입력 대화상자
        │   ├─ popover.js      <details> 팝오버 공통 동작
        │   └─ dom.js          DOM·아이콘 헬퍼
@@ -107,7 +110,7 @@ export default {
 - 스키마 정의: [data-schema.md](data-schema.md)
 - 저장 키: `classboardkit:v{schemaVersion}:boards`, `classboardkit:settings`
 - 변경 후 **500ms 디바운스** 저장, `QuotaExceededError` 시 사용자에게 알림 + 내보내기 권유
-- `navigator.storage.persist()` 요청 (지원 시)
+- `navigator.storage.persist()` 요청 (지원 시) — 홈 화면 앱 실행 시와 첫 내보내기 후에만 (Firefox는 권한 창을 띄우므로 로드 시 호출하지 않음)
 - **Safari 저장소 정리 정책**: 사이트와 상호작용이 일정 기간 없으면 스크립트 저장소가 삭제될 수 있음 (홈 화면 설치 PWA는 예외로 알려짐) [검토] → 홈 화면 설치 안내 + 주기적 내보내기 권장 UI
 
 ## 4. 브라우저 API
@@ -117,8 +120,8 @@ export default {
 | Pointer Events | 드래그·리사이즈 (마우스·터치 통합) | — (NFR-001 범위에서 전부 지원) |
 | `crypto.getRandomValues` | 공정한 뽑기·편성 (Fisher–Yates) | — |
 | Web Audio API | 타이머 종료음 (합성음, 오디오 파일 불필요) | 첫 사용자 제스처 후 AudioContext 활성화 |
-| Fullscreen API | 전체 화면 | 버튼 숨김. iPadOS 지원 범위 [검토] |
-| Screen Wake Lock API | 화면 꺼짐 방지 | 버튼 숨김 + 안내 |
+| Fullscreen API | 전체 화면 | 버튼 숨김. `webkitRequestFullscreen` 접두어도 감지 (iPadOS 실기기 확인 [검토]) |
+| Screen Wake Lock API | 화면 꺼짐 방지 | 버튼 숨김. 요청 거부(저전력 등) 시 알림. 켜짐 여부는 `settings.keepAwake`에 저장하고 탭이 다시 보일 때·첫 제스처에서 재요청 |
 | Service Worker / Cache API | 오프라인 | 온라인 전용 동작 |
 | File API / `<a download>` | JSON 내보내기/가져오기 | — |
 | getUserMedia (Phase 2) | 소음 측정기 | 권한 거부 안내 |
@@ -143,6 +146,8 @@ export default {
 - 사용자 입력은 `textContent`로만 렌더 (`innerHTML` 금지, 정적 템플릿 제외)
 - CSP를 `<meta http-equiv="Content-Security-Policy">`로 지정: `default-src 'self'` 기반
 - 가져오기 JSON은 스키마 검증 후 반영, 알 수 없는 위젯 타입은 "지원되지 않는 위젯" 플레이스홀더로 보존
+  - 처리 순서: 크기(5MB) → JSON 파싱 → `app` 확인 → `schemaVersion`(더 높으면 거부) → 보드 수(1~200) → `migrate()` → 보드별 `validateBoard()` → 보드·위젯 **새 ID 발급** → 기존 보드 뒤에 추가
+  - 하나라도 실패하면 아무것도 가져오지 않음 (부분 가져오기 없음). 설정(`settings`)은 가져오지 않음
 - 외부 요청 없음 (NFR-007)
 
 ## 8. 테스트 전략
@@ -152,7 +157,7 @@ export default {
 | 단위 | 뽑기·편성 알고리즘, 타이머 계산, 스키마 검증·마이그레이션, i18n 폴백 | `node --test` |
 | E2E | 실제 마우스·터치·키보드 입력으로 화면 조작 검증 (로컬 전용, CI 제외) | `tools/e2e/*.mjs` (Edge/Chrome 헤드리스 + DevTools Protocol, 의존성 없음) |
 | 수동 | 기기·브라우저 체크리스트 (노트북 Chrome/Edge/Safari, iPad Safari, Android Chrome) | `docs/trd/qa-checklist.md` |
-| 품질 | Lighthouse | Chrome DevTools |
+| 품질 | Lighthouse (데스크톱·모바일 프리셋) | `npx lighthouse@12` + 로컬 Edge(`CHROME_PATH`), 요약: `tools/lh-summary.mjs` |
 
 - 테스트 파일: `tests/*.test.js` — DOM 비의존 모듈만 import
 - `package.json`은 `"type": "module"` 선언과 스크립트 별칭용이며 의존성은 없다 (`npm install` 불필요)
@@ -162,7 +167,10 @@ export default {
 - `.github/workflows/ci.yml`: PR 시 `node --test`
 - `.github/workflows/deploy.yml`: `main` 푸시 → 테스트 → `actions/upload-pages-artifact` → `actions/deploy-pages`
 - 배포물 = 저장소의 `index.html`, `src/`, `assets/`, `manifest.webmanifest`, `sw.js` (docs·tests 제외)
-- Service Worker 캐시 이름에 버전 포함 → 배포 시 갱신
+- Service Worker 캐시 이름 = `cbk-v{VERSION}-{BUILD}`. `BUILD`는 앱 파일 전체의 해시 → 파일이 바뀌면 sw.js도 바뀌어 브라우저가 새 버전을 설치
+- **SW 파일 목록 규칙**: `sw.js`의 `PRECACHE`·`BUILD`는 `tools/sw-stamp.mjs`가 생성 (`index.html`, `manifest.webmanifest`, `src/**`, `assets/**`). 앱 파일을 바꾸면 실행. `tests/sw-manifest.test.js`가 누락·잔여 항목·해시 불일치·deploy.yml 포함 여부를 검사하므로 잊으면 CI 실패
+- 캐시 전략: 같은 출처 GET은 캐시 우선(쿼리 무시) → 없으면 네트워크 → 오프라인 이동 요청은 `./`. 새 버전은 대기시키고 "새로고침" 알림에서 `SKIP_WAITING` → `controllerchange` 시 새로고침 (수업 중 자동 새로고침 방지). 열린 탭은 다시 보일 때 1시간 간격으로 업데이트 확인
+- 아이콘 PNG는 `tools/make-icons.mjs`(헤드리스 Edge로 SVG 캡처)로 생성해 커밋
 
 ## 10. 계획 디렉터리 (개발 착수 후 생성)
 

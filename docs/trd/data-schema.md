@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.1 | 2026-11-04 | @owner |
+| draft | 0.2 | 2026-11-05 | @owner |
 
 현재 스키마 버전: **1**
 
@@ -17,6 +17,10 @@
   "settings": { /* Settings, 전체 내보내기 시에만 */ }
 }
 ```
+
+- 파일명: `classboardkit-<보드 이름 slug | all>-YYYYMMDD.classboardkit.json` (금지 문자 `/:*?"<>|`·제어 문자 제거, 공백 → `-`, 최대 50자, 한글 허용, 날짜는 로컬 기준)
+- 가져오기 제한: 5MB, 보드 1~200개. 처리 순서와 오류 코드(`too-large`·`not-json`·`wrong-app`·`newer-version`·`invalid`·`empty`)는 `src/core/transfer.js`
+- 가져오기는 보드만 추가한다 (`settings`는 무시). 보드·위젯 ID는 새로 발급
 
 ## 2. Board
 
@@ -72,8 +76,16 @@
 ## 5. Settings
 
 ```json
-{ "locale": "ko", "theme": "system", "dockCollapsed": false, "activeBoardId": "b_k3x9a2" }
+{ "locale": "ko", "theme": "system", "dockCollapsed": false, "activeBoardId": "b_k3x9a2",
+  "lastExportAt": "2026-11-05T09:00:00.000Z", "keepAwake": true }
 ```
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `lastExportAt?` | ISO 문자열 | 마지막 내보내기 시각 (M3 추가, 선택). 보드 메뉴 "마지막 백업" 표시용 |
+| `keepAwake?` | boolean | 화면 켜두기 사용 여부 (M3 추가, 선택). 다음 실행 시 재요청 |
+
+> 선택 필드 추가이므로 `schemaVersion`은 1 그대로다 (없으면 기본값으로 읽음).
 
 ## 6. localStorage 키
 
@@ -94,3 +106,4 @@
 | 스키마 | 날짜 | 내용 |
 |---|---|---|
 | 1 | 2026-11-04 | 최초 정의 |
+| 1 | 2026-11-05 | Settings 선택 필드 `lastExportAt`·`keepAwake` 추가 (버전 유지), 내보내기 파일명·가져오기 규칙 명시 |

@@ -10,7 +10,10 @@
     <meta name="description" content="Offline-first classroom widget board. No sign-up, no server." />
     <meta name="color-scheme" content="light dark" />
     <title>ClassBoardKit</title>
+    <meta name="theme-color" content="#2f6fdc" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="src/styles/tokens.css" />
     <link rel="stylesheet" href="src/styles/base.css" />
     <link rel="stylesheet" href="src/styles/app.css" />
@@ -19,6 +22,7 @@
   </head>
   <body>
     <div class="app" id="app">
+      <h1 class="sr-only" data-i18n="app.name">ClassBoardKit</h1>
       <main class="canvas" id="canvas" tabindex="-1" data-i18n-aria-label="board.canvasLabel">
         <div class="canvas__empty" id="canvas-empty">
           <svg class="icon icon--xl" aria-hidden="true"><use href="assets/icons.svg#board"></use></svg>
@@ -56,11 +60,34 @@
             </div>
             <p class="popover__heading" data-i18n="board.background"></p>
             <div class="swatches" id="background-swatches"></div>
+            <p class="popover__heading" data-i18n="board.backupHeading"></p>
+            <div class="board-menu__actions board-menu__actions--transfer" id="board-transfer">
+              <button type="button" class="menu-button" data-action="export">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg>
+                <span data-i18n="board.export"></span>
+              </button>
+              <button type="button" class="menu-button" data-action="exportAll">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg>
+                <span data-i18n="board.exportAll"></span>
+              </button>
+              <button type="button" class="menu-button" data-action="import">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#upload"></use></svg>
+                <span data-i18n="board.import"></span>
+              </button>
+            </div>
+            <p class="board-menu__backup" id="board-backup-status"></p>
+            <input type="file" id="import-file" accept=".json,application/json" hidden />
           </div>
         </details>
       </div>
 
       <div class="toolbar toolbar--end">
+        <button type="button" class="icon-button" id="keep-awake-toggle" aria-pressed="false" hidden>
+          <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#sun"></use></svg>
+        </button>
+        <button type="button" class="icon-button" id="fullscreen-toggle" aria-pressed="false" hidden>
+          <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#maximize"></use></svg>
+        </button>
         <details class="popover" id="settings">
           <summary class="icon-button" data-i18n-aria-label="settings.open" data-i18n-title="settings.open">
             <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#sliders"></use></svg>

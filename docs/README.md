@@ -11,7 +11,8 @@
 | 데이터 스키마 | `trd/data-schema.md` | 저장·내보내기 JSON 구조 | 스키마 변경 시 (버전 업) |
 | ADR | `trd/adr/ADR-xxxx-*.md` | 중요한 기술 결정 기록 | 결정 시 (불변, 대체만 가능) |
 | 로드맵 | `roadmap/ROADMAP.md` | 단계·마일스톤·순서 | 마일스톤 완료/변경 시 |
-| 마일스톤 계획 | `roadmap/M3-plan.md` | 다음 마일스톤 실행 순서·완료 기준 | 착수 전 |
+| 마일스톤 계획 | `roadmap/M3-plan.md` | 마일스톤 실행 순서·완료 기준 (M3 완료) | 착수 전 |
+| 릴리스 노트 | `releases/vX.Y.Z.md` | 버전별 사용자 안내 (GitHub Release 본문) | 릴리스 시 |
 | QA 체크리스트 | `trd/qa-checklist.md` | 기기별 수동 점검 항목 | 마일스톤마다 |
 | 작업 안내 | `../CLAUDE.md` | 환경·명령·규칙·현재 상태 (세션 인계용) | 마일스톤마다 |
 | E2E | `../tools/e2e/README.md` | 브라우저 자동 검증 실행법 | 시나리오 추가 시 |

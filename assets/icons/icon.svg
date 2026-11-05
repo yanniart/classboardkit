@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 앱 아이콘 (자체 제작, 프로젝트 MIT). favicon.svg와 같은 보드 모티프 -->
+  <rect width="512" height="512" rx="112" fill="#2f6fdc" />
+  <g id="mark">
+    <rect x="96" y="120" width="320" height="232" rx="28" fill="#ffffff" />
+    <rect x="132" y="156" width="108" height="92" rx="16" fill="#2f6fdc" />
+    <rect x="270" y="166" width="110" height="24" rx="12" fill="#2f6fdc" opacity="0.55" />
+    <rect x="270" y="210" width="76" height="24" rx="12" fill="#2f6fdc" opacity="0.55" />
+    <rect x="132" y="284" width="248" height="32" rx="16" fill="#ffd166" />
+    <rect x="236" y="352" width="40" height="40" fill="#ffffff" />
+    <rect x="172" y="386" width="168" height="26" rx="13" fill="#ffffff" />
+  </g>
+</svg>

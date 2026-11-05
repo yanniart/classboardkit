@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.1 | 2026-11-04 | @owner |
+| draft | 0.2 | 2026-11-05 | @owner |
 
 > 1인 개발 기준 상대 일정(주 단위). 착수일 확정 시 날짜를 기입한다. 기간은 추정치.
 
@@ -13,7 +13,7 @@
 | 0. 기반 | M0 | 1주 | — | **완료** (2026-11-04, 원격 저장소 설정 제외) |
 | 1. MVP | M1 캔버스·보드 | 2주 | — | **완료** (2026-11-04, iPad 실기기 확인 제외) |
 | | M2 핵심 위젯 | 2~3주 | — | **완료** (2026-11-04) |
-| | M3 안정화·출시 | 1주 | **v0.1.0** | 계획 |
+| | M3 안정화·출시 | 1주 | **v0.1.0** | **완료** (2026-11-05, 태그·배포·실기기 QA 제외) |
 | 2. 확장 | M4 위젯 확장 | 3주 | v0.2.0 | 계획 |
 | | M5 공유·템플릿 | 2주 | v0.3.0 | 계획 |
 | 3. 고도화 | M6 접근성·디자인 | 2주 | v0.4.0 | 계획 |
@@ -48,11 +48,14 @@
 
 ### M3: 안정화·출시 (1주) — F-005, F-009, F-010, F-011
 > 상세 실행 계획: [M3-plan.md](M3-plan.md)
-- JSON 내보내기/가져오기 + 스키마 검증
-- PWA(Service Worker, manifest), 전체 화면, Wake Lock, 테마
-- Lighthouse 90+ 달성, 크로스 브라우저 QA
-- README 스크린샷·데모 GIF, CHANGELOG
-- **DoD / 출시**: `v0.1.0` 태그 + GitHub Release
+- [x] JSON 내보내기/가져오기 + 스키마 검증 (`core/transfer.js`, 새 ID 발급, 5MB·200보드 제한, 마지막 백업 표시)
+- [x] PWA(Service Worker, manifest, 아이콘 4종), 새 버전 알림, 전체 화면, Wake Lock (테마는 M0 완료)
+- [x] SW precache 목록·빌드 해시 자동 생성(`tools/sw-stamp.mjs`) + 누락 검사 테스트
+- [x] Lighthouse 90+: 데스크톱 100/100/100, 모바일 93/100/100 (Performance/Accessibility/Best Practices)
+- [ ] 크로스 브라우저 QA (Safari·iPad·Firefox 실기기) — **보류** (Edge 자동 검증만 완료)
+- [x] README 스크린샷, CHANGELOG `[0.1.0]`, 릴리스 노트 초안 (데모 GIF는 생략)
+- [ ] **DoD / 출시**: `v0.1.0` 태그 + GitHub Release — **사용자 승인 대기** (원격 저장소 연결 후)
+- 검증: 단위 128개, E2E m1 34 · m2 36 · m3 44 (오프라인 새로고침·업데이트 흐름 포함)
 
 ## Phase 2 — 확장
 

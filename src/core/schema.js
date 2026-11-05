@@ -118,6 +118,13 @@ export function validateSettings(settings) {
   if (settings.activeBoardId !== null && !isString(settings.activeBoardId)) {
     errors.push('settings.activeBoardId: must be a string or null');
   }
+  // 선택 필드 (M3): 없으면 기본값으로 읽는다
+  if (settings.lastExportAt !== undefined && (!isString(settings.lastExportAt) || Number.isNaN(Date.parse(settings.lastExportAt)))) {
+    errors.push('settings.lastExportAt: must be an ISO date string');
+  }
+  if (settings.keepAwake !== undefined && typeof settings.keepAwake !== 'boolean') {
+    errors.push('settings.keepAwake: must be a boolean');
+  }
   return errors;
 }
 

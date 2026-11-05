@@ -8,11 +8,13 @@ import { h, iconButton } from './dom.js';
  * - data-i18n-title="key"      → title 속성
  *
  * @param {ParentNode} root
- * @param {(key: string) => string} t
+ * @param {(key: string, params?: Record<string, unknown>) => string} t
  */
 export function translateDom(root, t) {
   for (const el of root.querySelectorAll('[data-i18n]')) {
-    el.textContent = t(/** @type {HTMLElement} */ (el).dataset.i18n ?? '');
+    const { i18n: key = '', i18nParams } = /** @type {HTMLElement} */ (el).dataset;
+    // data-i18n-params: 매개변수가 있는 문구(알림 등)를 언어 변경 시 다시 채우기 위한 JSON
+    el.textContent = i18nParams ? t(key, JSON.parse(i18nParams)) : t(key);
   }
   for (const el of root.querySelectorAll('[data-i18n-aria-label]')) {
     el.setAttribute('aria-label', t(/** @type {HTMLElement} */ (el).dataset.i18nAriaLabel ?? ''));
@@ -21,6 +23,9 @@ export function translateDom(root, t) {
     el.setAttribute('title', t(/** @type {HTMLElement} */ (el).dataset.i18nTitle ?? ''));
   }
 }
+
+/** 정보 알림 자동 닫힘 시간 (ms) */
+const INFO_TIMEOUT = 6000;
 
 /** @param {string} theme */
 function applyTheme(theme) {
@@ -99,19 +104,42 @@ export function mountShell({ root, store, i18n, localeNames }) {
 
   return {
     /**
-     * 닫을 수 있는 알림을 띄운다. 같은 메시지는 중복 표시하지 않는다.
+     * 닫을 수 있는 알림을 띄운다. 같은 키의 알림은 새 내용으로 교체한다.
+     * - error: 사용자가 닫을 때까지 유지 (빨간 띠)
+     * - info: 액션이 없으면 INFO_TIMEOUT 뒤 자동으로 닫힘 (파란 띠)
+     *
      * @param {string} messageKey i18n 키
+     * @param {{
+     *   type?: 'error' | 'info',
+     *   params?: Record<string, string | number>,
+     *   action?: { labelKey: string, onClick: () => void },
+     * }} [options]
      */
-    notify(messageKey) {
-      if (el.notices.querySelector(`[data-key="${CSS.escape(messageKey)}"]`)) return;
+    notify(messageKey, { type = 'error', params, action } = {}) {
+      el.notices.querySelector(`[data-key="${CSS.escape(messageKey)}"]`)?.remove();
       const close = iconButton({ iconName: 'close', label: i18n.t('common.close'), className: 'notice__close' });
       close.dataset.i18nAriaLabel = 'common.close';
-      const notice = h('div', { className: 'notice', dataset: { key: messageKey } }, [
-        h('p', { className: 'notice__text', text: i18n.t(messageKey), dataset: { i18n: messageKey } }),
+      const textDataset = { i18n: messageKey, ...(params ? { i18nParams: JSON.stringify(params) } : {}) };
+      const actionButton = action
+        ? h('button', {
+            className: 'notice__action',
+            text: i18n.t(action.labelKey),
+            attrs: { type: 'button' },
+            dataset: { i18n: action.labelKey },
+          })
+        : null;
+      const notice = h('div', { className: `notice notice--${type}`, dataset: { key: messageKey, type } }, [
+        h('p', { className: 'notice__text', text: i18n.t(messageKey, params), dataset: textDataset }),
+        actionButton,
         close,
       ]);
       close.addEventListener('click', () => notice.remove());
+      actionButton?.addEventListener('click', () => {
+        notice.remove();
+        action?.onClick();
+      });
       el.notices.append(notice);
+      if (type === 'info' && !action) setTimeout(() => notice.remove(), INFO_TIMEOUT);
     },
   };
 }

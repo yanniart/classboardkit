@@ -13,11 +13,13 @@
 - **git 커밋·푸시·원격 저장소 생성은 사용자가 요청할 때만** (로컬 `main`에 커밋 있음, 원격 저장소 없음 — GitHub 연결은 사용자가 "차후 진행"으로 보류)
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
 
-## 현재 상태 (2026-11-04)
-- M0·M1·M2 완료. 위젯 8종(타이머·스톱워치·시계·랜덤 뽑기·모둠 편성·점수판·신호등·텍스트)
-- 단위 테스트 112개, E2E m1 34항목·m2 36항목 통과
-- **다음: M3** → [docs/roadmap/M3-plan.md](docs/roadmap/M3-plan.md) 순서대로 진행 ("m3 진행해줘")
-- 미완료: iPad Safari 실기기 QA, 원격 저장소·Labels·Milestones·Pages 배포 확인
+## 현재 상태 (2026-11-05)
+- M0~M3 완료 → **v0.1.0 준비 완료** (package.json 0.1.0, CHANGELOG `[0.1.0]`, 릴리스 노트 초안 `docs/releases/v0.1.0.md`)
+- 위젯 8종 + 내보내기/가져오기 + 전체 화면·화면 켜두기 + PWA 오프라인
+- 단위 테스트 128개, E2E m1 34 · m2 36 · m3 44 통과, Lighthouse 데스크톱 100/100/100 · 모바일 93/100/100
+- **사용자 승인 대기**: M3 작업분 git 커밋, 원격 저장소 연결, `v0.1.0` 태그·Release, Pages 배포
+- 미완료: 실기기 QA(iPad Safari·macOS Safari·Firefox — qa-checklist 8절), 서비스명 상표 확인
+- 다음 마일스톤: M4 위젯 확장 (계획서 `docs/roadmap/M4-plan.md` 아직 없음 → 먼저 작성)
 
 ## 환경 (Windows)
 - **시스템에 Node.js 없음.** 포터블 Node를 `.tools/node/node.exe`(git 제외)에 둠
@@ -37,7 +39,12 @@
 python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운드로)
 .tools/node/node.exe tools/e2e/m1.mjs                # E2E (서버 필요), 스크린샷 → tools/e2e/out/
 .tools/node/node.exe tools/e2e/m2.mjs
+.tools/node/node.exe tools/e2e/m3.mjs                # 포트 8766도 사용 (오프라인 검사용 자체 서버)
+.tools/node/node.exe tools/sw-stamp.mjs              # ★ 앱 파일(index.html·manifest·src·assets) 변경 후 필수
+.tools/node/node.exe tools/make-icons.mjs            # 아이콘 SVG 변경 시 PNG 재생성 (서버 필요)
 ```
+- Lighthouse (npx 일회성 실행, 사용자 승인 받음 2026-11-05):
+  `PATH="$PWD/.tools/node:$PATH" CHROME_PATH="C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" npx --yes lighthouse@12 http://127.0.0.1:8765/ --only-categories=performance,accessibility,best-practices --chrome-flags="--headless=new" --output=json --output-path=tools/e2e/out/lh-mobile.json --quiet` (데스크톱은 `--preset=desktop`) → `node tools/lh-summary.mjs <json>`
 - E2E 후 남은 헤드리스 Edge 확인: PowerShell `Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" | ? { $_.CommandLine -like '*cbk-e2e-*' }` (하네스가 자동 정리함)
 - 작업 끝나면 8765 서버 종료
 
@@ -51,6 +58,10 @@ python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운�
 - 문서: `docs/README.md` 인덱스, PRD·TRD·data-schema·ADR·ROADMAP·QA·devlog
 
 ## 반복해서 겪은 함정
+- **sw-stamp 잊으면** `tests/sw-manifest.test.js` 실패 (BUILD 해시 불일치). 브라우저에서 수정이 안 보이면 SW 캐시 탓 → 새 버전 알림의 새로고침 또는 DevTools "Update on reload"
+- E2E 하네스는 `console.warn`도 오류로 집계 → 예상된 실패는 `console.info`
+- DevTools 네트워크 오프라인 에뮬레이션은 SW fetch를 못 막음 → 서버를 실제로 꺼서 검증
+- Bash 도구에서 `cat > file` 뒤에 heredoc 없이 쓰면 입력 대기로 멈춤
 - 같은 CSS 클래스를 다른 역할 버튼에 재사용하지 말 것 (M2: 설정 버튼에 `widget__remove` 재사용 → 선택자 충돌)
 - E2E 클릭은 하네스 `click()` 사용 (스크롤 영역 자동 처리). 겹친 위젯은 먼저 배치를 정리
 - 원거리 가독성: 스크린샷으로 글자 크기 확인 (기본 크기 위젯에서 본문 18px 이상)
