@@ -1,0 +1,156 @@
+.draw {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  --pen: currentColor;
+}
+
+.draw__toolbar {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.draw__toolbar .w-btn {
+  min-width: 40px;
+  min-height: 40px;
+  font-size: 1rem;
+}
+
+.draw__toolbar .w-btn[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft, var(--color-surface-muted));
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+
+.draw__pen .icon {
+  color: var(--pen);
+}
+
+.draw__toolbar .w-btn:last-child {
+  margin-inline-start: auto;
+}
+
+/* 펜 색·굵기 선택 (펜 버튼을 누르면 펼침) */
+.draw__palette {
+  position: absolute;
+  top: 49px;
+  left: 6px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 12px);
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.draw__palette[hidden] {
+  display: none;
+}
+
+.draw__palette .w-btn {
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.draw__swatch::before {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--swatch);
+}
+
+.draw__swatch[data-color='ink'] { --swatch: var(--color-text); }
+.draw__swatch[data-color='red'] { --swatch: #e5484d; }
+.draw__swatch[data-color='blue'] { --swatch: #2f6fde; }
+.draw__swatch[data-color='green'] { --swatch: #2e9d4f; }
+.draw__swatch[data-color='orange'] { --swatch: #f08c00; }
+.draw__swatch[data-color='purple'] { --swatch: #8e4ec6; }
+
+.draw__palette .w-btn[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+.draw__sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-border);
+}
+
+.draw__dot {
+  border-radius: 50%;
+  background: var(--pen);
+}
+
+.draw__width[data-width='s'] .draw__dot { width: 4px; height: 4px; }
+.draw__width[data-width='m'] .draw__dot { width: 8px; height: 8px; }
+.draw__width[data-width='l'] .draw__dot { width: 14px; height: 14px; }
+
+/* 그리기 영역: 바깥(비율 밖)은 옅게, 종이 부분은 위젯 배경색 */
+.draw__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+.draw__paper {
+  position: absolute;
+  background: var(--color-surface);
+}
+
+.draw__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.draw__stage.is-erasing .draw__canvas {
+  cursor: cell;
+}
+
+.draw__hint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: clamp(1rem, 7cqmin, 1.5rem);
+  text-align: center;
+  pointer-events: none;
+}
+
+.draw__hint[hidden],
+.draw__notice[hidden] {
+  display: none;
+}
+
+.draw__notice {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 16px);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-danger);
+  color: #ffffff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  pointer-events: none;
+}

@@ -8,10 +8,11 @@ const { cdp, evaluate, click, drag, touchDrag, key, shot, viewport, saved, setti
 await viewport(1280, 800);
 await cdp('Page.navigate', { url: APP_URL });
 await sleep(1200);
+await b.ready();
 
 // 1. 초기 상태
 check('empty state visible', await evaluate(`!document.getElementById('canvas-empty').hidden`));
-check('dock has 8 widget buttons', (await evaluate(`document.querySelectorAll('.dock__item').length`)) === 8);
+check('dock has widget buttons (8+)', (await evaluate(`document.querySelectorAll('.dock__item').length`)) >= 8);
 
 // 2. 위젯 추가 (독 클릭)
 await click('.dock__item[data-type="timer"]');

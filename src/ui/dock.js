@@ -60,13 +60,25 @@ export function mountDock({ dock, store, registry, i18n, onAdded }) {
           [icon(def.icon), h('span', { className: 'dock__label', text: name })],
         );
         button.addEventListener('click', () => add(def));
+        // 키보드로 이동할 때 가려진 항목이 보이도록
+        button.addEventListener('focus', () => button.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
         return button;
       }),
     );
   }
 
+  /** 가로로 넘칠 때 양 끝 fade 표시 (방향은 RTL이 없으므로 왼쪽→오른쪽 기준) */
+  function updateOverflow() {
+    const max = items.scrollWidth - items.clientWidth;
+    items.classList.toggle('has-more-start', max > 1 && items.scrollLeft > 1);
+    items.classList.toggle('has-more-end', max > 1 && items.scrollLeft < max - 1);
+  }
+  items.addEventListener('scroll', updateOverflow, { passive: true });
+  new ResizeObserver(updateOverflow).observe(items);
+
   store.subscribe((next, prev) => {
     if (next.settings !== prev.settings) render();
   });
   render();
+  updateOverflow();
 }

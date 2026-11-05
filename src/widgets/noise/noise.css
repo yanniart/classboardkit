@@ -1,0 +1,102 @@
+.noise {
+  height: 100%;
+  border: 4px solid transparent;
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-base);
+}
+
+.noise [hidden] {
+  display: none !important;
+}
+
+.noise__idle-text.is-error {
+  color: var(--color-danger);
+}
+
+.noise__privacy {
+  font-size: var(--text-sm);
+}
+
+.noise__live {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqh;
+  padding: 4cqmin;
+}
+
+/* 막대: 아래에서 위로 차오름, 가로선 = 경고 기준 */
+.noise__meter {
+  position: relative;
+  width: min(40cqw, 22cqh);
+  flex: 1;
+  min-height: 0;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  overflow: hidden;
+}
+
+.noise__fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #34c759;
+}
+
+.noise__line {
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  height: 0;
+  border-top: 3px dashed var(--color-text);
+}
+
+.noise__face {
+  --face: #c9f2d3;
+  display: none;
+  width: min(70cqw, 60cqh);
+  color: #1f242c;
+}
+
+.noise[data-style='face'] .noise__meter {
+  display: none;
+}
+
+.noise[data-style='face'] .noise__face {
+  display: block;
+}
+
+.noise__face[data-mood='ok'] { --face: #ffe08a; }
+.noise__face[data-mood='loud'] { --face: #ffb4ad; }
+
+.noise.is-alarm {
+  border-color: var(--color-danger);
+}
+
+.noise.is-alarm .noise__fill {
+  background: var(--color-danger);
+}
+
+.noise__warning {
+  min-height: 1.2em;
+  font-size: clamp(1.125rem, 10cqh, 2.5rem);
+  font-weight: 800;
+  color: var(--color-danger);
+  text-align: center;
+}
+
+.noise__stop {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.w-range {
+  width: 100%;
+  accent-color: var(--color-accent);
+}

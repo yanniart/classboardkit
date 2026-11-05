@@ -14,11 +14,15 @@ import {
   createExport,
   daysSince,
   exportFileName,
+  bytesToBase64,
   parseImport,
   serializeExport,
+  verifyAssets,
 } from '../core/transfer.js';
 import { openDialog } from './dialog.js';
 import { requestPersistentStorage } from './updates.js';
+import { ImagePrepareError, getAssetStore, getAssetUrl, storeImageFile } from './idb-assets.js';
+import { referencedAssetIds } from '../core/assets.js';
 import { h, icon } from './dom.js';
 
 /** 가져오기 오류 코드 → 알림 메시지 키 */
@@ -29,6 +33,14 @@ const IMPORT_ERRORS = {
   'newer-version': 'transfer.error.newerVersion',
   invalid: 'transfer.error.invalid',
   empty: 'transfer.error.empty',
+};
+
+/** 배경 이미지 오류 코드 → 알림 메시지 키 (이미지 위젯 문구 재사용) */
+const BACKGROUND_ERRORS = {
+  unsupported: 'widget.image.error.unsupported',
+  type: 'widget.image.error.type',
+  'too-large': 'widget.image.error.tooLarge',
+  decode: 'widget.image.error.decode',
 };
 
 /**
@@ -51,6 +63,7 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
     transfer: /** @type {HTMLElement} */ (root.querySelector('#board-transfer')),
     backupStatus: /** @type {HTMLElement} */ (root.querySelector('#board-backup-status')),
     file: /** @type {HTMLInputElement} */ (root.querySelector('#import-file')),
+    bgFile: /** @type {HTMLInputElement} */ (root.querySelector('#background-file')),
   };
   const { t } = i18n;
   const close = () => (el.details.open = false);
@@ -110,10 +123,11 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
    * @param {any[]} boards
    * @param {string | null} name null이면 전체 내보내기
    */
-  function download(boards, name) {
+  async function download(boards, name) {
     const { settings } = store.getState();
     const now = new Date();
-    const data = createExport(boards, { now, ...(name === null ? { settings } : {}) });
+    const assets = await collectAssets(boards);
+    const data = createExport(boards, { now, assets, ...(name === null ? { settings } : {}) });
     const file = exportFileName(name, now);
     const url = URL.createObjectURL(new Blob([serializeExport(data)], { type: 'application/json' }));
     const link = h('a', { attrs: { href: url, download: file } });
@@ -125,6 +139,48 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
     store.update((s) => ({ ...s, settings: { ...s.settings, lastExportAt: now.toISOString() } }));
     notify('transfer.exported', { type: 'info', params: { file } });
     requestPersistentStorage();
+  }
+
+  /**
+   * 보드가 참조하는 이미지를 내보내기용 base64로 (M4 결정 D2). 저장소에 없는 이미지는 건너뜀
+   * @param {any[]} boards
+   */
+  async function collectAssets(boards) {
+    /** @type {Record<string, import('../core/transfer.js').ExportedAsset>} */
+    const out = {};
+    const ids = referencedAssetIds(boards);
+    if (ids.size === 0) return out;
+    const assets = await getAssetStore();
+    if (!assets) return out;
+    for (const id of ids) {
+      const rec = await assets.get(id);
+      if (!rec) continue;
+      const data = bytesToBase64(new Uint8Array(await rec.blob.arrayBuffer()));
+      out[id] = { type: rec.type, width: rec.width, height: rec.height, ...(rec.tone ? { tone: rec.tone } : {}), data };
+    }
+    return out;
+  }
+
+  /**
+   * 가져온 이미지를 보드 반영 전에 저장 (내용 해시 확인 후). 실패하면 오류 키
+   * @param {import('../core/transfer.js').ImportedAsset[]} imported
+   * @returns {Promise<string | null>}
+   */
+  async function storeImportedAssets(imported) {
+    if (imported.length === 0) return null;
+    const problem = await verifyAssets(imported);
+    if (problem) {
+      console.info('[import]', problem);
+      return IMPORT_ERRORS.invalid;
+    }
+    const assets = await getAssetStore();
+    // 이미지를 저장할 수 없는 환경이면 보드만 가져온다 (이미지는 "저장할 수 없음" 표시)
+    if (!assets) return null;
+    for (const a of imported) {
+      const id = await assets.put(new Blob([a.bytes], { type: a.type }), a);
+      if (id !== a.id) return IMPORT_ERRORS.invalid;
+    }
+    return null;
   }
 
   /** @param {File} file */
@@ -147,6 +203,17 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
       notify(IMPORT_ERRORS[result.error]);
       return;
     }
+    try {
+      const assetError = await storeImportedAssets(result.assets);
+      if (assetError) {
+        notify(assetError);
+        return;
+      }
+    } catch (error) {
+      console.info('[import] could not store images', error);
+      notify('transfer.error.read');
+      return;
+    }
     store.update((s) => importBoards(s, result.boards));
     notify('transfer.imported', { type: 'info', params: { n: result.boards.length } });
   }
@@ -156,11 +223,11 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
       const board = getActiveBoard(store.getState());
       if (!board) return;
       close();
-      download([board], board.name);
+      await download([board], board.name);
     },
     async exportAll() {
       close();
-      download(store.getState().boards, null);
+      await download(store.getState().boards, null);
     },
     async import() {
       close();
@@ -241,8 +308,48 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
         });
         return swatch;
       }),
+      imageSwatch(board),
     );
   }
+
+  /**
+   * 사용자 이미지 배경 견본 (F-007): 선택 중이면 미리보기, 아니면 이미지 아이콘
+   * @param {any} board
+   */
+  function imageSwatch(board) {
+    const imageId = board ? resolveBackground(board.background).imageId : undefined;
+    const label = t('background.image');
+    const swatch = h(
+      'button',
+      {
+        className: 'swatch swatch--image',
+        attrs: { type: 'button', 'aria-label': label, title: label, 'aria-pressed': String(Boolean(imageId)) },
+      },
+      [icon('image')],
+    );
+    if (imageId) {
+      getAssetUrl(imageId).then((entry) => {
+        if (entry) swatch.style.backgroundImage = `url("${entry.url}")`;
+      });
+    }
+    swatch.addEventListener('click', () => el.bgFile.click());
+    return swatch;
+  }
+
+  el.bgFile.addEventListener('change', async () => {
+    const file = el.bgFile.files?.[0];
+    el.bgFile.value = '';
+    const boardId = getActiveBoard(store.getState())?.id;
+    if (!file || !boardId) return;
+    try {
+      const id = await storeImageFile(file);
+      store.update((s) => setBackground(s, boardId, { type: 'image', value: id }));
+    } catch (error) {
+      console.info('[background] could not use image', error);
+      const code = error instanceof ImagePrepareError ? error.code : 'decode';
+      notify(BACKGROUND_ERRORS[/** @type {keyof typeof BACKGROUND_ERRORS} */ (code)] ?? BACKGROUND_ERRORS.decode);
+    }
+  });
 
   function render() {
     const board = getActiveBoard(store.getState());

@@ -12,10 +12,14 @@ const SAVE_WAIT = 650;
 await viewport(1440, 900);
 await cdp('Page.navigate', { url: APP_URL });
 await sleep(1200);
+await b.ready();
 
 // 1. 독에서 8종 추가
-const types = await evaluate(`[...document.querySelectorAll('.dock__item')].map(b => b.dataset.type)`);
-check('dock lists 8 widgets in order', types.join(',') === 'timer,stopwatch,clock,randomizer,groups,scoreboard,traffic,text', types.join(','));
+// M2 위젯 8종만 사용 (이후 마일스톤 위젯은 독에 섞여 있어도 상대 순서만 확인)
+const M2_TYPES = ['timer', 'stopwatch', 'clock', 'randomizer', 'groups', 'scoreboard', 'traffic', 'text'];
+const dockTypes = await evaluate(`[...document.querySelectorAll('.dock__item')].map(b => b.dataset.type)`);
+const types = dockTypes.filter((t) => M2_TYPES.includes(t));
+check('dock lists 8 widgets in order', types.join(',') === M2_TYPES.join(','), dockTypes.join(','));
 for (const t of types) await click(`.dock__item[data-type="${t}"]`);
 await sleep(SAVE_WAIT);
 check('8 widgets added', (await saved())[0].widgets.length === 8);

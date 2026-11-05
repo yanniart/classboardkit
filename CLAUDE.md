@@ -23,7 +23,10 @@
 - 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등, `tools/e2e/pwa-remote.mjs`
 - 사용자 작업 대기: GitHub Release 페이지 작성, Labels·Milestones
 - 미완료: 실기기 QA(iPad Safari·macOS Safari·Firefox — qa-checklist 8절), 서비스명 상표 확인
-- **다음: M4 위젯 확장** → [docs/roadmap/M4-plan.md](docs/roadmap/M4-plan.md) ("m4 진행해줘" → 확인 질문 없이 바로 1절부터. 결정 4건 확정됨, `m4` 브랜치에서 작업)
+- **M4 위젯 확장 구현 완료 (2026-11-05, `m4` 브랜치, 커밋 전)** → 위젯 14종(+주사위·카운트다운·그리기·이미지·소음·QR), 사용자 이미지 배경, 이미지 포함 백업, IndexedDB(ADR-0007), QR 벤더링(ADR-0006)
+  - 단위 164개, E2E m1 34 · m2 36 · m3 44 · m4 72, Lighthouse 로컬 데스크톱 99 · 모바일 93
+  - 남은 것: 사용자 승인 후 커밋 → `main` 병합·푸시(배포) → 배포 URL E2E·Lighthouse → `v0.2.0` 태그, 실기기 QA(qa-checklist 9절)
+  - 릴리스 노트 `docs/releases/v0.2.0.md`, 개발 로그 `docs/devlog/2026/2026-11-05-m4.md`
 
 ## 환경 (Windows)
 - **시스템에 Node.js 없음.** 포터블 Node를 `.tools/node/node.exe`(git 제외)에 둠
@@ -44,6 +47,7 @@ python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운�
 .tools/node/node.exe tools/e2e/m1.mjs                # E2E (서버 필요), 스크린샷 → tools/e2e/out/
 .tools/node/node.exe tools/e2e/m2.mjs
 .tools/node/node.exe tools/e2e/m3.mjs                # 포트 8766도 사용 (오프라인 검사용 자체 서버)
+.tools/node/node.exe tools/e2e/m4.mjs                # M4 위젯 (가짜 마이크 인자 사용, 8766도 사용)
 .tools/node/node.exe tools/sw-stamp.mjs              # ★ 앱 파일(index.html·manifest·src·assets) 변경 후 필수
 .tools/node/node.exe tools/make-icons.mjs            # 아이콘 SVG 변경 시 PNG 재생성 (서버 필요)
 ```
@@ -69,3 +73,8 @@ python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운�
 - 같은 CSS 클래스를 다른 역할 버튼에 재사용하지 말 것 (M2: 설정 버튼에 `widget__remove` 재사용 → 선택자 충돌)
 - E2E 클릭은 하네스 `click()` 사용 (스크롤 영역 자동 처리). 겹친 위젯은 먼저 배치를 정리
 - 원거리 가독성: 스크린샷으로 글자 크기 확인 (기본 크기 위젯에서 본문 18px 이상)
+- **Bash에서 `node -e "..."` 안에 백틱 템플릿 문자열을 쓰면 셸이 명령 치환으로 해석**해 코드가 깨짐(M4에서 2번) → 긴 수정은 Edit 도구나 Write로 만든 스크립트 파일로
+- Bash heredoc 안의 `\\`는 `\`로 바뀔 수 있음 → 백슬래시가 든 스크립트도 Write 도구로 작성
+- `src/main.js`는 첫 화면만 그리고 `app.js`를 동적 import → E2E는 `b.ready()`로 대기 (고정 sleep은 가끔 실패)
+- 이미지 저장소는 IndexedDB(`classboardkit`/`assets`), 이미지 ID는 내용 해시. 위젯은 `state.assetId` 한 필드만 써야 백업·GC가 인식
+- `src/vendor/qrcodegen.js`는 수정 금지 (해시 테스트). 갱신 절차는 ADR-0006

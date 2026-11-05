@@ -33,15 +33,15 @@ function findBrowser() {
 
 /**
  * 브라우저를 띄우고 조작 도구를 반환한다.
- * @param {{ lang?: string }} [options]
+ * @param {{ lang?: string, args?: string[] }} [options] args: 브라우저 추가 인자 (예: 가짜 마이크)
  */
-export async function launch({ lang = 'ko' } = {}) {
+export async function launch({ lang = 'ko', args = [] } = {}) {
   mkdirSync(OUT_DIR, { recursive: true });
   const port = 9400 + Math.floor(Math.random() * 500);
   const profile = mkdtempSync(join(tmpdir(), 'cbk-e2e-'));
   const browser = spawn(findBrowser(), [
     '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
-    '--no-first-run', '--no-default-browser-check', `--lang=${lang}`, '--disable-gpu', 'about:blank',
+    '--no-first-run', '--no-default-browser-check', `--lang=${lang}`, '--disable-gpu', ...args, 'about:blank',
   ], { stdio: 'ignore' });
 
   // 하위 프로세스까지 확실히 종료 (Windows에서 부모만 죽이면 디버깅 포트를 잡은 자식이 남는다)
@@ -183,6 +183,16 @@ export async function launch({ lang = 'ko' } = {}) {
   await cdp('Runtime.enable');
   await cdp('Log.enable');
 
+  /** 앱 본체가 뜰 때까지 대기 (독 버튼이 생기면 준비 완료) — 고정 sleep보다 안정적 */
+  const ready = async (timeoutMs = 8000) => {
+    for (let waited = 0; waited < timeoutMs; waited += 100) {
+      const ok = await evaluate("document.readyState === 'complete' && !!document.querySelector('.dock__item')").catch(() => false);
+      if (ok) break;
+      await sleep(100);
+    }
+    await sleep(300);
+  };
+
   const results = [];
   const check = (name, ok, detail = '') => results.push({ name, ok: Boolean(ok), detail });
 
@@ -196,5 +206,5 @@ export async function launch({ lang = 'ko' } = {}) {
     process.exit(results.every((r) => r.ok) ? 0 : 1);
   };
 
-  return { cdp, evaluate, rect, mouse, click, drag, touchDrag, key, type, shot, viewport, saved, settings, check, finish, errors };
+  return { cdp, evaluate, ready, rect, mouse, click, drag, touchDrag, key, type, shot, viewport, saved, settings, check, finish, errors };
 }

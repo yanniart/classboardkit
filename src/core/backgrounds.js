@@ -2,6 +2,7 @@
  * 보드 배경 프리셋 (F-006).
  * - type 'gradient': value = 프리셋 키
  * - type 'color':    value = 색상 코드 (프리셋 또는 사용자 지정)
+ * - type 'image':    value = 이미지 ID (IndexedDB, ADR-0007). 표시는 캔버스가 비동기로 처리
  * - tone: 배경 위 빈 상태 문구 등의 글자색 판단용 ('light' 배경 → 어두운 글자)
  *
  * 'default'는 CSS 토큰(--color-board)을 따라 테마에 맞게 바뀐다.
@@ -26,6 +27,7 @@ export const BACKGROUND_PRESETS = [
 ];
 
 const HEX = /^#[0-9a-f]{6}$/i;
+const ASSET_ID = /^a_[0-9a-f]{16}$/;
 
 /** 기본 프리셋 */
 export const DEFAULT_BACKGROUND = BACKGROUND_PRESETS[0];
@@ -33,9 +35,12 @@ export const DEFAULT_BACKGROUND = BACKGROUND_PRESETS[0];
 /**
  * 보드 배경 값을 화면 표시용으로 해석한다. 알 수 없는 값은 기본 배경으로.
  * @param {{ type: string, value: string }} background
- * @returns {{ css: string | null, tone: 'light' | 'dark' | 'theme', preset: BackgroundPreset | null }}
+ * @returns {{ css: string | null, tone: 'light' | 'dark' | 'theme', preset: BackgroundPreset | null, imageId?: string }}
  */
 export function resolveBackground(background) {
+  if (background?.type === 'image' && ASSET_ID.test(background.value)) {
+    return { css: null, tone: 'theme', preset: null, imageId: background.value };
+  }
   const preset = BACKGROUND_PRESETS.find(
     (p) => p.type === background?.type && p.value === background?.value,
   );

@@ -1,0 +1,64 @@
+.countdown {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2cqh;
+  padding: 4cqmin;
+  text-align: center;
+}
+
+.countdown__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  max-width: 100%;
+  font-size: clamp(1.125rem, 10cqh, 2.5rem);
+}
+
+.countdown__badge {
+  flex: none;
+  padding: 0.1em 0.5em;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.countdown__title {
+  min-width: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.countdown__days {
+  font-size: clamp(1.25rem, 18cqh, 5rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.countdown__clock {
+  font-size: clamp(1.5rem, min(26cqh, 18cqw), 8rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.countdown__status {
+  font-size: clamp(1.125rem, 14cqh, 3rem);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.countdown.is-past .countdown__badge {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.countdown [hidden] {
+  display: none;
+}

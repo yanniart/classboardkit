@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.2 | 2026-11-05 | @owner |
+| draft | 0.3 | 2026-11-05 | @owner |
 
 관련 문서: [PRD](../prd/PRD.md) · [데이터 스키마](data-schema.md) · [ADR 목록](adr/)
 
@@ -13,7 +13,7 @@
 | 마크업/스타일 | HTML5, CSS (Custom Properties, Container Queries) | 표준만 사용 |
 | 스크립트 | Vanilla JavaScript ES2020+, ES Modules | [ADR-0001](adr/ADR-0001-no-build-vanilla-js.md) |
 | 빌드 | 없음 | 1인 유지보수, 소스 = 배포물 |
-| 저장 | localStorage (보드), IndexedDB (이미지, Phase 2) | [ADR-0002](adr/ADR-0002-local-only-storage.md) |
+| 저장 | localStorage (보드), IndexedDB (이미지, M4) | [ADR-0002](adr/ADR-0002-local-only-storage.md), [ADR-0007](adr/ADR-0007-indexeddb-image-assets.md) |
 | 호스팅 | GitHub Pages | 무료, HTTPS 기본 제공 (마이크·Wake Lock 등 보안 컨텍스트 필요) |
 | CI/CD | GitHub Actions | 테스트 후 Pages 배포 |
 | 테스트 | Node.js 내장 `node:test` (개발 환경에서만) | npm 의존성 없이 순수 로직 테스트 |
@@ -23,7 +23,8 @@
 
 ```
 index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체)
-  └─ src/main.js ─ 앱 부트스트랩
+  └─ src/main.js ─ 진입점: 첫 화면 문구·테마만 먼저 그리고 app.js를 동적 import (M4, LCP)
+     src/app.js  ─ 앱 부트스트랩 (저장소·스토어·UI 마운트, 이미지 정리, SW 등록)
        ├─ core/
        │   ├─ store.js        단일 상태 저장소 (get / update / subscribe)
        │   ├─ persistence.js  localStorage 저장·복원, 디바운스, 할당량 오류 처리
@@ -32,14 +33,17 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
        │   ├─ board-ops.js    보드·위젯 상태 변경 순수 함수 (추가/삭제/이동/z-order/복제…)
        │   ├─ geometry.js     비율 좌표 이동·크기 조절·배치 계산
        │   ├─ backgrounds.js  배경 프리셋, 밝기(tone) 판정
-       │   ├─ transfer.js     내보내기 파일 생성, 가져오기 파싱·검증·새 ID 발급, 파일명
+       │   ├─ transfer.js     내보내기 파일 생성(이미지 base64 포함), 가져오기 파싱·검증·새 ID 발급·이미지 해시 확인, 파일명
+       │   ├─ assets.js       이미지 저장소 규칙: 내용 해시 ID, 참조 수집, GC, 축소 크기 (백엔드 주입)
        │   ├─ i18n.js         메시지 조회, 언어 감지
        │   └─ utils/          id, debounce, memory-storage, sound(Web Audio)
        ├─ ui/
-       │   ├─ shell.js        언어·테마 설정, 정적 문구 번역, 알림(error/info, 매개변수, 액션 버튼)
+       │   ├─ shell.js        언어·테마 설정, 알림(error/info, 매개변수, 액션 버튼)
+       │   ├─ i18n-dom.js     정적 문구 번역 (main.js·shell.js 공용)
+       │   ├─ idb-assets.js   IndexedDB 백엔드, 이미지 준비(축소·WebP), object URL 캐시
        │   ├─ canvas.js       위젯 프레임 렌더, 드래그·리사이즈·키보드 (Pointer Events)
        │   ├─ dock.js         위젯 독, 접기
-       │   ├─ board-menu.js   보드 목록·관리, 배경 선택, 내보내기/가져오기, 마지막 백업 표시
+       │   ├─ board-menu.js   보드 목록·관리, 배경 선택(내 이미지 포함), 내보내기/가져오기, 마지막 백업 표시
        │   ├─ display-controls.js  전체 화면·화면 켜두기 (기능 감지, 미지원 시 숨김)
        │   ├─ updates.js      서비스 워커 등록, 새 버전 알림, 저장소 영구 보관 요청
        │   ├─ dialog.js       <dialog> 확인·입력 대화상자
@@ -49,7 +53,9 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
            ├─ index.js        기본 위젯 등록 (배열 순서 = 독 순서)
            ├─ shared/         ui.js(설정 패널·입력 요소), list.js(명단 파싱)
            ├─ timer/ stopwatch/ clock/ randomizer/ groups/ scoreboard/ traffic/ text/
+           ├─ countdown/ dice/ draw/ image/ noise/ qr/   (M4)
            │                  각 index.js + *.css (+ *-logic.js: 순수 상태 전이)
+       vendor/qrcodegen.js    QR 인코더 (Nayuki v1.4.0, 원본 그대로, QR 위젯이 지연 로드 — ADR-0006)
        styles/widgets.css     위젯 공통 스타일(.w-*), 팀 색 팔레트
 ```
 
@@ -101,6 +107,16 @@ export default {
 
 - 드래그는 제목 막대로만 시작해 위젯 내부 조작(버튼·입력)과 충돌하지 않는다 (태블릿 리스크 대응)
 - `.canvas`는 `z-index: 0`으로 쌓임 맥락을 만들어 위젯 z가 커져도 툴바·독을 덮지 않는다
+- 독이 넘치면(위젯 14종, 태블릿 세로) 가로 스크롤 + 남은 쪽 끝 흐림(`has-more-start/end`), 키보드 포커스 시 해당 항목이 보이게 스크롤
+
+### 2.2.2 M4 위젯 구현 규칙
+- **그리기**: 획을 벡터로 저장(data-schema §4). `<canvas>`(devicePixelRatio 반영), Pointer Events + `touch-action: none`, 획이 끝날 때 한 번만 `setState`. 첫 획의 영역 비율(`aspect`)로 **contain** 배치 → 위젯 크기가 바뀌어도 글씨가 늘어나지 않음. 지우개는 `destination-out` 획. 양자화(0~10000) + RDP 단순화(허용 오차 0.2%), 위젯당 점 20,000개 상한. 'ink' 색은 테마 글자색을 따름
+  - **키보드 예외(NFR-005)**: 그리기 자체는 포인터 전용. 도구 막대(펜·색·굵기·지우개·취소·모두 지우기)는 키보드로 조작 가능
+- **이미지·배경**: 위젯은 `state.assetId`, 배경은 `{ type: 'image', value }` (ADR-0007). 파일 선택·끌어 놓기·붙여넣기(위젯 포커스). object URL은 세션 캐시 공유
+- **카운트다운**: 목표는 시간대 없는 로컬 시각. 하루 이상 남고 초를 안 보이면 분 경계마다, 아니면 초마다 갱신. D-day는 달력 날짜 차이(서머타임 무관)
+- **소음 측정기**: "측정 시작"(사용자 제스처)에서만 `getUserMedia`, 음성 처리(에코·잡음 억제·자동 이득) 끔, `AnalyserNode`는 스피커에 연결하지 않음. RMS → dBFS → 0~100(감도별 바닥 -45/-55/-65dB, 천장 -10dB), 올라갈 때 빠르고 내려갈 때 느린 평활, 임계값을 **1초 이상** 넘을 때만 시각 경고(소리 경고 없음). `destroy()`·탭 숨김 시 트랙 중지
+- **QR**: 라이브러리를 첫 사용 때 `<script>`로 로드, SVG(가로 연속 모듈 합친 path, 여백 4모듈, 흰 바탕 고정)
+- **주사위**: `randomInt(6)`, 굴리는 연출은 `prefers-reduced-motion`이면 생략. 결과는 누르는 즉시 저장
 
 ### 2.3 좌표계
 - 위젯 위치·크기는 **캔버스 대비 비율(0~1)** 로 저장 → 노트북·태블릿 간 화면 비율이 달라도 동일 배치 ([ADR-0004](adr/ADR-0004-relative-coordinates.md))
@@ -124,7 +140,10 @@ export default {
 | Screen Wake Lock API | 화면 꺼짐 방지 | 버튼 숨김. 요청 거부(저전력 등) 시 알림. 켜짐 여부는 `settings.keepAwake`에 저장하고 탭이 다시 보일 때·첫 제스처에서 재요청 |
 | Service Worker / Cache API | 오프라인 | 온라인 전용 동작 |
 | File API / `<a download>` | JSON 내보내기/가져오기 | — |
-| getUserMedia (Phase 2) | 소음 측정기 | 권한 거부 안내 |
+| getUserMedia + Web Audio `AnalyserNode` (M4) | 소음 측정기 | 거부·마이크 없음·사용 중·보안 컨텍스트 아님 각각 안내 |
+| IndexedDB (M4) | 이미지·사용자 배경 | 이미지 기능만 비활성 + 안내 |
+| `createImageBitmap` + canvas `toBlob` (M4) | 이미지 축소·WebP 재인코딩, 평균 밝기 | WebP 미지원 시 JPEG |
+| `crypto.subtle.digest` (M4) | 이미지 ID(내용 해시), 가져오기 무결성 확인 | — (보안 컨텍스트) |
 
 ### 4.1 타이머 정확도
 - `setInterval` 누적 방식 금지. **종료 목표 시각(`endAt = Date.now() + remaining`)** 을 저장하고 `requestAnimationFrame`/주기 갱신 시 차이로 계산 → 백그라운드 탭 스로틀링·새로고침에도 정확
@@ -146,9 +165,12 @@ export default {
 - 사용자 입력은 `textContent`로만 렌더 (`innerHTML` 금지, 정적 템플릿 제외)
 - CSP를 `<meta http-equiv="Content-Security-Policy">`로 지정: `default-src 'self'` 기반
 - 가져오기 JSON은 스키마 검증 후 반영, 알 수 없는 위젯 타입은 "지원되지 않는 위젯" 플레이스홀더로 보존
-  - 처리 순서: 크기(5MB) → JSON 파싱 → `app` 확인 → `schemaVersion`(더 높으면 거부) → 보드 수(1~200) → `migrate()` → 보드별 `validateBoard()` → 보드·위젯 **새 ID 발급** → 기존 보드 뒤에 추가
+  - 처리 순서: 크기(30MB) → JSON 파싱 → `app` 확인 → `schemaVersion`(더 높으면 거부) → 보드 수(1~200) → `migrate()` → 보드별 `validateBoard()` → `assets` 형식 검사(참조된 것만) → 보드·위젯 **새 ID 발급** → 이미지 **내용 해시 = ID 확인** → IndexedDB 저장 → 기존 보드 뒤에 추가
   - 하나라도 실패하면 아무것도 가져오지 않음 (부분 가져오기 없음). 설정(`settings`)은 가져오지 않음
 - 외부 요청 없음 (NFR-007)
+- 이미지: SVG 업로드 금지(스크립트 포함 가능), 표시는 `blob:` URL(CSP `img-src blob:`)
+- **소음 측정기 개인정보**: 소리는 기기 안에서 레벨 숫자로만 바뀌며 녹음·저장·전송하지 않는다. 위젯 state에도 설정값만 저장. 측정 중이 아니면 마이크를 잡지 않음(위젯 삭제·보드 전환·언어 변경·탭 숨김 시 트랙 중지 — E2E로 확인)
+- 서드파티 코드: `src/vendor/qrcodegen.js`(MIT, 해시 고정 — ADR-0006) 1개
 
 ## 8. 테스트 전략
 
@@ -159,7 +181,8 @@ export default {
 | 수동 | 기기·브라우저 체크리스트 (노트북 Chrome/Edge/Safari, iPad Safari, Android Chrome) | `docs/trd/qa-checklist.md` |
 | 품질 | Lighthouse (데스크톱·모바일 프리셋) | `npx lighthouse@12` + 로컬 Edge(`CHROME_PATH`), 요약: `tools/lh-summary.mjs` |
 
-- 테스트 파일: `tests/*.test.js` — DOM 비의존 모듈만 import
+- 테스트 파일: `tests/*.test.js` — DOM 비의존 모듈만 import (QR 라이브러리는 `node:vm`에서 일반 스크립트로 실행해 검사)
+- E2E 보조: `launch({ args })`로 브라우저 인자 전달(소음 측정기용 `--use-fake-device-for-media-stream`·`--use-fake-ui-for-media-stream`), `tools/e2e/png.mjs`(의존성 없는 PNG 생성), `ready()`(앱 본체가 뜰 때까지 대기)
 - `package.json`은 `"type": "module"` 선언과 스크립트 별칭용이며 의존성은 없다 (`npm install` 불필요)
 - 브라우저 저장소를 쓸 수 없을 때는 `core/utils/memory-storage.js`로 대체하고 사용자에게 알린다 (테스트용 가짜 저장소와 같은 구현)
 
@@ -192,5 +215,5 @@ docs/
 | 이름 | 용도 | 라이선스 | 도입 단계 | 상태 |
 |---|---|---|---|---|
 | (없음) | — | — | MVP | — |
-| QR 생성 라이브러리 (후보 미정) | F-109 | 확인 필요 | Phase 2 | [검토] 벤더링 예정 |
+| Nayuki QR Code generator v1.4.0 (`src/vendor/qrcodegen.js`) | F-109 QR 인코딩 | MIT | M4 | 결정: 원본 벤더링, 지연 로드 ([ADR-0006](adr/ADR-0006-qr-library-vendoring.md)) |
 | 아이콘 | UI 아이콘 | 자체 제작 (MIT) | M0 | 결정: `assets/icons.svg` 스프라이트 |

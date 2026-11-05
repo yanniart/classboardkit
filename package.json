@@ -1,6 +1,6 @@
 {
   "name": "classboardkit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Offline-first classroom widget board. No build step.",
   "type": "module",
@@ -11,7 +11,7 @@
   "scripts": {
     "test": "node --test",
     "serve": "python -m http.server 8765 --bind 127.0.0.1",
-    "e2e": "node tools/e2e/m1.mjs && node tools/e2e/m2.mjs && node tools/e2e/m3.mjs",
+    "e2e": "node tools/e2e/m1.mjs && node tools/e2e/m2.mjs && node tools/e2e/m3.mjs && node tools/e2e/m4.mjs",
     "sw:stamp": "node tools/sw-stamp.mjs",
     "icons": "node tools/make-icons.mjs"
   }

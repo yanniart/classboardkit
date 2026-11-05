@@ -4,9 +4,13 @@
  */
 import { APP_ID, SCHEMA_VERSION, migrate, validateBoard } from './schema.js';
 import { createId } from './utils/id.js';
+import { IMAGE_TYPES, assetIdFor, isAssetId, referencedAssetIds } from './assets.js';
 
-/** 가져오기 파일 최대 크기 (문자 수 기준, 대략 바이트) */
-export const MAX_IMPORT_SIZE = 5 * 1024 * 1024;
+/** 가져오기 파일 최대 크기 (문자 수 기준, 대략 바이트). 이미지 포함(base64)이라 30MB (M4 결정 D2) */
+export const MAX_IMPORT_SIZE = 30 * 1024 * 1024;
+
+/** 파일 안 이미지 하나의 최대 크기 (디코딩 후 바이트) */
+export const MAX_IMPORT_ASSET_BYTES = 10 * 1024 * 1024;
 
 /** 가져오기 1회 최대 보드 수 (비정상 파일 방어) */
 export const MAX_IMPORT_BOARDS = 200;
@@ -15,7 +19,9 @@ export const FILE_EXTENSION = '.classboardkit.json';
 
 /**
  * @typedef {'too-large' | 'not-json' | 'wrong-app' | 'newer-version' | 'invalid' | 'empty'} ImportErrorCode
- * @typedef {{ ok: true, boards: any[] } | { ok: false, error: ImportErrorCode, detail: string }} ImportResult
+ * @typedef {{ id: string, type: string, width: number, height: number, tone?: 'light' | 'dark', bytes: Uint8Array }} ImportedAsset
+ * @typedef {{ type: string, width: number, height: number, tone?: 'light' | 'dark', data: string }} ExportedAsset
+ * @typedef {{ ok: true, boards: any[], assets: ImportedAsset[] } | { ok: false, error: ImportErrorCode, detail: string }} ImportResult
  */
 
 const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -23,9 +29,10 @@ const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
 /**
  * 내보내기 객체를 만든다. 원본은 복제해 넣는다.
  * @param {any[]} boards
- * @param {{ settings?: any, now?: Date }} [options] settings는 전체 내보내기에서만 넣는다
+ * @param {{ settings?: any, now?: Date, assets?: Record<string, ExportedAsset> }} [options]
+ *   settings는 전체 내보내기에서만 넣는다. assets는 보드가 참조하는 이미지 (비어 있으면 생략)
  */
-export function createExport(boards, { settings, now = new Date() } = {}) {
+export function createExport(boards, { settings, now = new Date(), assets } = {}) {
   /** @type {Record<string, unknown>} */
   const data = {
     app: APP_ID,
@@ -34,6 +41,7 @@ export function createExport(boards, { settings, now = new Date() } = {}) {
     boards: structuredClone(boards),
   };
   if (settings !== undefined) data.settings = structuredClone(settings);
+  if (assets && Object.keys(assets).length > 0) data.assets = assets;
   return data;
 }
 
@@ -105,7 +113,69 @@ export function parseImport(text) {
   );
   if (errors.length > 0) return { ok: false, error: 'invalid', detail: errors.join('; ') };
 
-  return { ok: true, boards: migrated.boards.map(reassignIds) };
+  const assets = parseAssets(raw.assets, migrated.boards);
+  if (typeof assets === 'string') return { ok: false, error: 'invalid', detail: assets };
+
+  return { ok: true, boards: migrated.boards.map(reassignIds), assets };
+}
+
+const BASE64_RE = /^[A-Za-z0-9+/]*={0,2}$/;
+
+/**
+ * 파일의 assets 필드 검사·디코딩. 가져오는 보드가 참조하는 이미지만 남긴다 (나머지는 무시).
+ * 형식이 틀리면 오류 문자열 (부분 가져오기 없음)
+ * @param {unknown} raw
+ * @param {any[]} boards
+ * @returns {ImportedAsset[] | string}
+ */
+function parseAssets(raw, boards) {
+  if (raw === undefined) return [];
+  if (!isObject(raw)) return 'assets: must be an object';
+  const wanted = referencedAssetIds(boards);
+  /** @type {ImportedAsset[]} */
+  const out = [];
+  for (const [id, a] of Object.entries(/** @type {Record<string, any>} */ (raw))) {
+    const at = `assets.${id}`;
+    if (!isAssetId(id)) return `${at}: invalid id`;
+    if (!isObject(a)) return `${at}: must be an object`;
+    if (!IMAGE_TYPES.includes(a.type)) return `${at}.type: unsupported`;
+    if (![a.width, a.height].every((n) => Number.isInteger(n) && n > 0 && n <= 16384)) return `${at}: invalid size`;
+    if (a.tone !== undefined && a.tone !== 'light' && a.tone !== 'dark') return `${at}.tone: invalid`;
+    if (typeof a.data !== 'string' || a.data.length % 4 !== 0 || !BASE64_RE.test(a.data)) return `${at}.data: must be base64`;
+    if ((a.data.length * 3) / 4 > MAX_IMPORT_ASSET_BYTES) return `${at}.data: too large`;
+    if (!wanted.has(id)) continue;
+    const { type, width, height, tone } = a;
+    out.push({ id, type, width, height, ...(tone ? { tone } : {}), bytes: base64ToBytes(a.data) });
+  }
+  return out;
+}
+
+/**
+ * 이미지 내용이 ID(내용 해시)와 맞는지 확인 (변조·손상 파일 거부)
+ * @param {ImportedAsset[]} assets
+ * @returns {Promise<string | null>} 오류 설명 또는 null
+ */
+export async function verifyAssets(assets) {
+  for (const a of assets) {
+    if ((await assetIdFor(a.bytes)) !== a.id) return `assets.${a.id}: content does not match id`;
+  }
+  return null;
+}
+
+/** @param {Uint8Array} bytes */
+export function bytesToBase64(bytes) {
+  let bin = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  return btoa(bin);
+}
+
+/** @param {string} b64 */
+export function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) out[i] = bin.charCodeAt(i);
+  return out;
 }
 
 /**

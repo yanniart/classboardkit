@@ -1,28 +1,8 @@
 import { THEMES } from '../core/schema.js';
 import { h, iconButton } from './dom.js';
+import { translateDom } from './i18n-dom.js';
 
-/**
- * 정적 마크업의 data-i18n 속성을 번역한다.
- * - data-i18n="key"            → textContent
- * - data-i18n-aria-label="key" → aria-label 속성
- * - data-i18n-title="key"      → title 속성
- *
- * @param {ParentNode} root
- * @param {(key: string, params?: Record<string, unknown>) => string} t
- */
-export function translateDom(root, t) {
-  for (const el of root.querySelectorAll('[data-i18n]')) {
-    const { i18n: key = '', i18nParams } = /** @type {HTMLElement} */ (el).dataset;
-    // data-i18n-params: 매개변수가 있는 문구(알림 등)를 언어 변경 시 다시 채우기 위한 JSON
-    el.textContent = i18nParams ? t(key, JSON.parse(i18nParams)) : t(key);
-  }
-  for (const el of root.querySelectorAll('[data-i18n-aria-label]')) {
-    el.setAttribute('aria-label', t(/** @type {HTMLElement} */ (el).dataset.i18nAriaLabel ?? ''));
-  }
-  for (const el of root.querySelectorAll('[data-i18n-title]')) {
-    el.setAttribute('title', t(/** @type {HTMLElement} */ (el).dataset.i18nTitle ?? ''));
-  }
-}
+export { translateDom } from './i18n-dom.js';
 
 /** 정보 알림 자동 닫힘 시간 (ms) */
 const INFO_TIMEOUT = 6000;

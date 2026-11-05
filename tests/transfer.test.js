@@ -152,3 +152,57 @@ test('validateSettings: 선택 필드 lastExportAt·keepAwake', () => {
   assert.equal(validateSettings({ ...base, lastExportAt: 'nope' }).length, 1);
   assert.equal(validateSettings({ ...base, keepAwake: 'yes' }).length, 1);
 });
+
+// ── 이미지 포함 (M4, D2) ──
+
+test('이미지 포함 왕복: 참조된 이미지만, 해시 일치 확인', async () => {
+  const { assetIdFor } = await import('../src/core/assets.js');
+  const { bytesToBase64, verifyAssets } = await import('../src/core/transfer.js');
+  const bytes = new TextEncoder().encode('fake-png-bytes');
+  const id = await assetIdFor(bytes);
+  const unused = await assetIdFor(new TextEncoder().encode('unused'));
+  const board = sampleBoard();
+  board.background = { type: 'image', value: id };
+  board.widgets.push({ id: 'w_i', type: 'image', version: 1, x: 0, y: 0, w: 0.2, h: 0.2, z: 3, state: { assetId: id, fit: 'contain', alt: '' } });
+  const data = createExport([board], {
+    now: T0,
+    assets: {
+      [id]: { type: 'image/png', width: 4, height: 3, tone: 'light', data: bytesToBase64(bytes) },
+      [unused]: { type: 'image/png', width: 1, height: 1, data: bytesToBase64(new TextEncoder().encode('unused')) },
+    },
+  });
+  const r = parseImport(serializeExport(data));
+  assert.equal(r.ok, true, r.detail);
+  assert.equal(r.assets.length, 1, '참조 안 된 이미지는 무시');
+  assert.equal(r.assets[0].id, id);
+  assert.deepEqual([...r.assets[0].bytes], [...bytes]);
+  assert.equal(r.assets[0].tone, 'light');
+  assert.equal(r.boards[0].background.value, id, '이미지 ID는 그대로 (내용 해시)');
+  assert.equal(await verifyAssets(r.assets), null);
+
+  // 변조: 같은 ID에 다른 내용
+  data.assets[id].data = bytesToBase64(new TextEncoder().encode('tampered'));
+  const t = parseImport(serializeExport(data));
+  assert.equal(t.ok, true);
+  assert.match(await verifyAssets(t.assets), /does not match/);
+});
+
+test('이미지 필드 형식 오류는 전체 거부', () => {
+  const board = sampleBoard();
+  const base = createExport([board], { now: T0 });
+  const bad = (assets) => parseImport(JSON.stringify({ ...base, assets }));
+  assert.equal(bad([]).error, 'invalid');
+  assert.equal(bad({ 'not-id': {} }).error, 'invalid');
+  assert.equal(bad({ a_0123456789abcdef: { type: 'image/svg+xml', width: 1, height: 1, data: '' } }).error, 'invalid');
+  assert.equal(bad({ a_0123456789abcdef: { type: 'image/png', width: 0, height: 1, data: '' } }).error, 'invalid');
+  assert.equal(bad({ a_0123456789abcdef: { type: 'image/png', width: 1, height: 1, data: 'not base64!' } }).error, 'invalid');
+  assert.equal(bad({ a_0123456789abcdef: { type: 'image/png', width: 1, height: 1, data: 'QUJD' } }).ok, true, '형식이 맞고 참조 안 됨 → 무시');
+  assert.deepEqual(parseImport(JSON.stringify(base)).assets, [], 'assets 없는 v0.1.0 파일');
+});
+
+test('base64 왕복 (큰 배열)', async () => {
+  const { bytesToBase64, base64ToBytes } = await import('../src/core/transfer.js');
+  const bytes = new Uint8Array(100_000).map((_, i) => (i * 31) % 256);
+  assert.deepEqual(base64ToBytes(bytesToBase64(bytes)), bytes);
+  assert.equal(MAX_IMPORT_SIZE, 30 * 1024 * 1024);
+});

@@ -61,8 +61,15 @@
 
 ### M4: 위젯 확장 (3주) — F-109~F-114, F-007
 > 상세 실행 계획: [M4-plan.md](M4-plan.md) (결정 4건 확정: QR 라이브러리 벤더링, 백업에 이미지 포함, 그리기 벡터 저장, `m4` 브랜치)
-- QR 코드(라이브러리 벤더링, ADR 작성), 소음 측정기, 그리기, 이미지, 주사위, 이벤트 카운트다운
-- IndexedDB 도입 (이미지·사용자 배경)
+- [x] 기반: 독 넘침 표시(fade), E2E 하네스 브라우저 인자·`ready()`, 아이콘 8종(dice·hourglass·pen·image·mic·qr·eraser·undo)
+- [x] 주사위, 이벤트 카운트다운, 그리기(벡터 저장·상한 20,000점), 소음 측정기(녹음 없음, 1초 지속 경고)
+- [x] IndexedDB 이미지 저장소(내용 해시 ID, GC — [ADR-0007](../trd/adr/ADR-0007-indexeddb-image-assets.md)), 이미지 위젯, 사용자 이미지 배경(F-007)
+- [x] 내보내기/가져오기에 이미지 포함 (해시 확인, 한도 30MB)
+- [x] QR 코드: Nayuki v1.4.0 벤더링·지연 로드 ([ADR-0006](../trd/adr/ADR-0006-qr-library-vendoring.md))
+- [x] 첫 화면 먼저 그리기(`main.js` → `app.js` 동적 import): 로컬 모바일 LCP 3.8s → 3.1s
+- 검증: 단위 164개, E2E m1 34 · m2 36 · m3 44 · **m4 72** (오프라인 QR·이미지 포함), Lighthouse 로컬 데스크톱 99/100/100 · 모바일 93/100/100, 첫 로드 gzip 116.9KB
+- [ ] 실기기 QA (QA 9절) — 보류
+- [ ] **승인 후**: `m4` → `main` 병합·배포, 배포 URL E2E·Lighthouse, `v0.2.0` 태그
 
 ### M5: 공유·템플릿 (2주) — F-012, F-013, F-014
 - URL 해시 공유(압축 인코딩: `CompressionStream` 사용 검토 [검토]), 개인정보 제외 옵션

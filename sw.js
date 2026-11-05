@@ -3,8 +3,8 @@
 // - 새 버전은 대기 상태로 두고, 페이지가 "새로고침" 알림에서 SKIP_WAITING을 보내면 교체한다.
 // - PRECACHE·BUILD는 tools/sw-stamp.mjs가 생성한다 (직접 고치지 말 것, 테스트가 검증).
 
-const VERSION = '0.1.0';
-const BUILD = 'b47da245';
+const VERSION = '0.2.0';
+const BUILD = '8e817f22';
 const CACHE = `cbk-v${VERSION}-${BUILD}`;
 const CACHE_PREFIX = 'cbk-';
 
@@ -20,6 +20,8 @@ const PRECACHE = [
   'assets/icons/icon.svg',
   'index.html',
   'manifest.webmanifest',
+  'src/app.js',
+  'src/core/assets.js',
   'src/core/backgrounds.js',
   'src/core/board-ops.js',
   'src/core/geometry.js',
@@ -48,16 +50,37 @@ const PRECACHE = [
   'src/ui/display-controls.js',
   'src/ui/dock.js',
   'src/ui/dom.js',
+  'src/ui/i18n-dom.js',
+  'src/ui/idb-assets.js',
   'src/ui/popover.js',
   'src/ui/shell.js',
   'src/ui/updates.js',
+  'src/vendor/qrcodegen.js',
   'src/widgets/clock/clock-logic.js',
   'src/widgets/clock/clock.css',
   'src/widgets/clock/index.js',
+  'src/widgets/countdown/countdown-logic.js',
+  'src/widgets/countdown/countdown.css',
+  'src/widgets/countdown/index.js',
+  'src/widgets/dice/dice-logic.js',
+  'src/widgets/dice/dice.css',
+  'src/widgets/dice/index.js',
+  'src/widgets/draw/draw-logic.js',
+  'src/widgets/draw/draw.css',
+  'src/widgets/draw/index.js',
   'src/widgets/groups/groups-logic.js',
   'src/widgets/groups/groups.css',
   'src/widgets/groups/index.js',
+  'src/widgets/image/image.css',
+  'src/widgets/image/index.js',
   'src/widgets/index.js',
+  'src/widgets/noise/index.js',
+  'src/widgets/noise/noise-logic.js',
+  'src/widgets/noise/noise.css',
+  'src/widgets/qr/index.js',
+  'src/widgets/qr/qr-loader.js',
+  'src/widgets/qr/qr-logic.js',
+  'src/widgets/qr/qr.css',
   'src/widgets/randomizer/index.js',
   'src/widgets/randomizer/randomizer-logic.js',
   'src/widgets/randomizer/randomizer.css',

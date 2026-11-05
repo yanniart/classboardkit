@@ -10,6 +10,7 @@ import { moveRect, resizeRect } from '../core/geometry.js';
 import { prepareWidget } from '../core/registry.js';
 import { resolveBackground } from '../core/backgrounds.js';
 import { h, iconButton } from './dom.js';
+import { getAssetUrl } from './idb-assets.js';
 
 /** 정의를 찾을 수 없는 위젯의 최소 크기 */
 const FALLBACK_MIN = { w: 0.1, h: 0.1 };
@@ -61,6 +62,34 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
   function commit(fn) {
     const id = boardId();
     if (id) store.update((s) => fn(s, id));
+  }
+
+  /** 표시 중인 배경 이미지 (보드 ID + 이미지 ID, 같으면 다시 불러오지 않음) */
+  /** @type {string | null} */
+  let backgroundImageId = null;
+
+  /** @param {ReturnType<typeof resolveBackground>} bg @param {string} boardKey */
+  function applyBackground(bg, boardKey) {
+    if (!bg.imageId) {
+      backgroundImageId = null;
+      canvas.style.background = bg.css ?? '';
+      canvas.dataset.tone = bg.tone;
+      return;
+    }
+    const id = `${boardKey}|${bg.imageId}`;
+    if (id === backgroundImageId) return;
+    backgroundImageId = id;
+    getAssetUrl(bg.imageId).then((entry) => {
+      if (backgroundImageId !== id) return;
+      if (!entry) {
+        // 이미지가 없으면 기본 배경 (보드 데이터는 그대로 둠)
+        canvas.style.background = '';
+        canvas.dataset.tone = 'theme';
+        return;
+      }
+      canvas.style.background = `center / cover no-repeat url("${entry.url}")`;
+      canvas.dataset.tone = entry.record.tone ?? 'light';
+    });
   }
 
   /** @param {any} widget */
@@ -247,9 +276,7 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
       renderedLocale = i18n.locale;
     }
 
-    const bg = resolveBackground(board.background);
-    canvas.style.background = bg.css ?? '';
-    canvas.dataset.tone = bg.tone;
+    applyBackground(resolveBackground(board.background), board.id);
 
     const seen = new Set();
     for (const widget of board.widgets) {

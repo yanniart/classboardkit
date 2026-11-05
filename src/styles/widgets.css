@@ -82,6 +82,9 @@
   text-align: center;
   color: var(--color-text-muted);
   font-size: clamp(0.875rem, 6cqmin, 1.25rem);
+  /* 한국어 단어 중간 줄바꿈 방지 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 /* ── 설정 패널 ── */

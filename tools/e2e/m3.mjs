@@ -43,6 +43,7 @@ await viewport(1440, 900);
 await cdp('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: DL_DIR });
 await cdp('Page.navigate', { url: APP_URL });
 await sleep(1200);
+await b.ready();
 
 // 0. 준비: 위젯 2개 + 보드 이름
 await click('.dock__item[data-type="timer"]');
@@ -231,7 +232,7 @@ for (let i = 0; i < 40 && !controlled; i += 1) {
 }
 check('service worker controls page', controlled);
 const cacheInfo = await evaluate(`caches.keys().then(async keys => { const c = await caches.open(keys[0]); return { keys, n: (await c.keys()).length }; })`);
-check('precache filled', cacheInfo.keys.length === 1 && cacheInfo.keys[0].startsWith('cbk-v0.1.0-') && cacheInfo.n > 60, JSON.stringify(cacheInfo));
+check('precache filled', cacheInfo.keys.length === 1 && /^cbk-v\d+\.\d+\.\d+-[0-9a-f]{8}$/.test(cacheInfo.keys[0]) && cacheInfo.n > 60, JSON.stringify(cacheInfo));
 
 const boardsBeforeOffline = (await saved()).length;
 server.closeAllConnections();
@@ -268,7 +269,7 @@ await click('.notice[data-key="update.available"] .notice__action');
 await sleep(2000);
 check('page reloaded after update', await evaluate(`window.__beforeUpdate !== true`));
 const keysAfter = await evaluate(`caches.keys()`);
-check('old cache removed, new cache active', keysAfter.length === 1 && keysAfter[0] === 'cbk-v0.1.0-e2e00000' && keysAfter[0] !== oldCache, JSON.stringify(keysAfter));
+check('old cache removed, new cache active', keysAfter.length === 1 && /^cbk-v\d+\.\d+\.\d+-e2e00000$/.test(keysAfter[0]) && keysAfter[0] !== oldCache, JSON.stringify(keysAfter));
 check('data survives update', (await saved())[0].widgets.some((w) => w.type === 'clock'));
 server.closeAllConnections();
 await new Promise((r) => server.close(r));

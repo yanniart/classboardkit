@@ -1,0 +1,48 @@
+.qr {
+  height: 100%;
+}
+
+.qr [hidden] {
+  display: none !important;
+}
+
+.qr__view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2cqh;
+  padding: 3cqmin;
+}
+
+.qr__box {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  container-type: size;
+}
+
+/* 흰 바탕 고정 (다크·고대비 테마에서도 스캔 가능) */
+.qr__code {
+  display: block;
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.qr__caption {
+  flex: none;
+  max-width: 100%;
+  font-size: clamp(1rem, 7cqh, 1.75rem);
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.qr__message.is-error {
+  color: var(--color-danger);
+}
