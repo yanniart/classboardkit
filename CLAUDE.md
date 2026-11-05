@@ -10,14 +10,17 @@
   - 서버·계정·BaaS 없음 → localStorage(+ 추후 IndexedDB), 학생 기기 참여 기능 없음
   - 대상: 해외 포함 누구나, 기기: 노트북·태블릿(터치)
   - 런타임 외부 라이브러리 0 (도입 시 ADR + 벤더링)
-- **git 커밋·푸시·원격 저장소 생성은 사용자가 요청할 때만** (로컬 `main`에 커밋 있음, 원격 저장소 없음 — GitHub 연결은 사용자가 "차후 진행"으로 보류)
+- **git 커밋·푸시·태그는 사용자가 요청할 때만**. 원격: `origin` = https://github.com/yanniart/classboardkit (공개), `main` 푸시 = Pages 자동 배포 → https://yanniart.github.io/classboardkit/
+- 이 PC에 `gh` CLI 없음 → GitHub 웹 작업(Release·Settings·Labels)은 사용자에게 요청. 공개 API(curl)로 Actions 상태 확인 가능:
+  `curl -s "https://api.github.com/repos/yanniart/classboardkit/actions/runs?per_page=3"`
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
 
 ## 현재 상태 (2026-11-05)
-- M0~M3 완료 → **v0.1.0 준비 완료** (package.json 0.1.0, CHANGELOG `[0.1.0]`, 릴리스 노트 초안 `docs/releases/v0.1.0.md`)
+- M0~M3 완료 → **v0.1.0 출시** (2026-11-05, 태그 `v0.1.0`, https://yanniart.github.io/classboardkit/, 릴리스 노트 `docs/releases/v0.1.0.md`)
 - 위젯 8종 + 내보내기/가져오기 + 전체 화면·화면 켜두기 + PWA 오프라인
-- 단위 테스트 128개, E2E m1 34 · m2 36 · m3 44 통과, Lighthouse 데스크톱 100/100/100 · 모바일 93/100/100
-- **사용자 승인 대기**: M3 작업분 git 커밋, 원격 저장소 연결, `v0.1.0` 태그·Release, Pages 배포
+- 단위 테스트 128개, E2E m1 34 · m2 36 · m3 44 통과 (로컬·배포 URL 모두), Lighthouse(배포) 데스크톱 99/100/100 · 모바일 100/100/100
+- 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등, `tools/e2e/pwa-remote.mjs`
+- 사용자 작업 대기: GitHub Release 페이지 작성, Labels·Milestones
 - 미완료: 실기기 QA(iPad Safari·macOS Safari·Firefox — qa-checklist 8절), 서비스명 상표 확인
 - 다음 마일스톤: M4 위젯 확장 (계획서 `docs/roadmap/M4-plan.md` 아직 없음 → 먼저 작성)
 

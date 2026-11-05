@@ -16,6 +16,12 @@ node tools/e2e/m3.mjs                          # 내보내기/가져오기·화�
 - m3의 오프라인 검사는 포트 **8766**에 자체 정적 서버를 띄웠다가 실제로 종료한다 (DevTools 네트워크 에뮬레이션은 서비스 워커의 fetch를 막지 못함). 같은 서버로 BUILD만 바꾼 sw.js를 내보내 업데이트 흐름도 검사한다
 - 다운로드는 `out/downloads/`, 가져오기는 `DOM.setFileInputFiles`로 파일 선택 창 없이 넣는다
 
+## 배포 URL 검증
+```bash
+E2E_URL=https://yanniart.github.io/classboardkit/ node tools/e2e/m1.mjs   # m2·m3도 동일 (m3 오프라인 부분은 로컬 8766)
+E2E_URL=https://yanniart.github.io/classboardkit/ node tools/e2e/pwa-remote.mjs   # SW 범위·precache
+```
+
 ## 기타 도구
 - `tools/make-icons.mjs`: `assets/icons/*.svg` → PNG 아이콘 4종 (서버 필요)
 - `tools/sw-stamp.mjs`: sw.js precache 목록·빌드 해시 갱신

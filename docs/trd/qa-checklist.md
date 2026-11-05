@@ -124,4 +124,4 @@
 - [ ] 새 버전 배포 후 열린 탭에 "새 버전" 알림 → 새로고침 → 데이터 유지
 
 ### 품질
-- [ ] Lighthouse Performance·Accessibility·Best Practices 각 90+ (배포 URL 기준 재측정)
+- [x] Lighthouse Performance·Accessibility·Best Practices 각 90+ (배포 URL 기준 재측정) — 2026-11-05 데스크톱 99/100/100, 모바일 100/100/100
