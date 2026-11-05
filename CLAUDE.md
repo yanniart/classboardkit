@@ -23,9 +23,9 @@
 - 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등, `tools/e2e/pwa-remote.mjs`
 - 사용자 작업 대기: GitHub Release 페이지 작성, Labels·Milestones
 - 미완료: 실기기 QA(iPad Safari·macOS Safari·Firefox — qa-checklist 8절), 서비스명 상표 확인
-- **M4 위젯 확장 구현 완료 (2026-11-05, `m4` 브랜치, 커밋 전)** → 위젯 14종(+주사위·카운트다운·그리기·이미지·소음·QR), 사용자 이미지 배경, 이미지 포함 백업, IndexedDB(ADR-0007), QR 벤더링(ADR-0006)
+- **M4 위젯 확장 → v0.2.0 출시 (2026-11-05, 태그 `v0.2.0`, 배포 URL E2E 192항목·Lighthouse 100/100/100)** → 위젯 14종(+주사위·카운트다운·그리기·이미지·소음·QR), 사용자 이미지 배경, 이미지 포함 백업, IndexedDB(ADR-0007), QR 벤더링(ADR-0006)
   - 단위 164개, E2E m1 34 · m2 36 · m3 44 · m4 72, Lighthouse 로컬 데스크톱 99 · 모바일 93
-  - 남은 것: 사용자 승인 후 커밋 → `main` 병합·푸시(배포) → 배포 URL E2E·Lighthouse → `v0.2.0` 태그, 실기기 QA(qa-checklist 9절)
+  - 남은 것: GitHub Release 페이지(사용자), 실기기 QA(qa-checklist 8·9절). 다음 마일스톤 M5(공유·템플릿)는 계획서 미작성
   - 릴리스 노트 `docs/releases/v0.2.0.md`, 개발 로그 `docs/devlog/2026/2026-11-05-m4.md`
 
 ## 환경 (Windows)
