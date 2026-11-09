@@ -208,3 +208,33 @@ export function stepper({ label, value, min, max, onChange, decLabel, incLabel }
 export function prefersReducedMotion() {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
+
+/**
+ * 화면 낭독기 알림 영역 (M6 live region 정책, TRD 2.2.4). 보이지 않으며, 사용자 조작의 **최종 결과**만 알린다.
+ * 연출 중(뽑기·주사위) 바뀌는 글자는 이 영역이 아닌 일반 요소에 그린다.
+ * @param {HTMLElement} container
+ * @param {'polite' | 'assertive'} [politeness]
+ */
+export function liveRegion(container, politeness = 'polite') {
+  const el = h('p', {
+    className: 'sr-only',
+    attrs: { role: politeness === 'assertive' ? 'alert' : 'status', 'aria-live': politeness, 'aria-atomic': 'true' },
+  });
+  container.append(el);
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  let timer = null;
+  return {
+    /** 같은 문구를 다시 말해도 읽히도록 비웠다가 넣는다 @param {string} text */
+    say(text) {
+      el.textContent = '';
+      if (timer !== null) clearTimeout(timer);
+      timer = setTimeout(() => {
+        el.textContent = text;
+        timer = null;
+      }, 60);
+    },
+    destroy() {
+      if (timer !== null) clearTimeout(timer);
+    },
+  };
+}

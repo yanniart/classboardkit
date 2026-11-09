@@ -2,8 +2,13 @@
   --cols: 2;
   height: 100%;
   display: grid;
-  grid-template-columns: repeat(var(--cols), 1fr);
-  grid-auto-rows: 1fr;
+  /*
+   * 보통은 --cols열. 카드가 3.75rem보다 좁아지면 열을 줄이고(버튼 두 개가 겹치지 않게),
+   * 그래도 높이가 모자라면 겹치는 대신 스크롤 (WCAG 2.5.8)
+   */
+  grid-template-columns: repeat(auto-fill, minmax(max(3.75rem, calc((100% - (var(--cols) - 1) * 12px) / var(--cols))), 1fr));
+  grid-auto-rows: minmax(min-content, 1fr);
+  overflow-y: auto;
   gap: clamp(4px, 2cqmin, 12px);
   padding: 3cqmin;
 }
@@ -25,14 +30,14 @@
   text-align: center;
 }
 
-.scoreboard__team[data-color='red'] { --team: var(--team-red); }
-.scoreboard__team[data-color='blue'] { --team: var(--team-blue); }
-.scoreboard__team[data-color='green'] { --team: var(--team-green); }
-.scoreboard__team[data-color='orange'] { --team: var(--team-orange); }
-.scoreboard__team[data-color='purple'] { --team: var(--team-purple); }
-.scoreboard__team[data-color='teal'] { --team: var(--team-teal); }
-.scoreboard__team[data-color='pink'] { --team: var(--team-pink); }
-.scoreboard__team[data-color='yellow'] { --team: var(--team-yellow); }
+.scoreboard__team[data-color='red'] { --team: var(--team-red); --team-text: var(--team-red-text); }
+.scoreboard__team[data-color='blue'] { --team: var(--team-blue); --team-text: var(--team-blue-text); }
+.scoreboard__team[data-color='green'] { --team: var(--team-green); --team-text: var(--team-green-text); }
+.scoreboard__team[data-color='orange'] { --team: var(--team-orange); --team-text: var(--team-orange-text); }
+.scoreboard__team[data-color='purple'] { --team: var(--team-purple); --team-text: var(--team-purple-text); }
+.scoreboard__team[data-color='teal'] { --team: var(--team-teal); --team-text: var(--team-teal-text); }
+.scoreboard__team[data-color='pink'] { --team: var(--team-pink); --team-text: var(--team-pink-text); }
+.scoreboard__team[data-color='yellow'] { --team: var(--team-yellow); --team-text: var(--team-yellow-text); }
 
 .scoreboard__team.is-leader {
   border-color: var(--team);
@@ -41,7 +46,7 @@
 .scoreboard__name {
   max-width: 100%;
   font-weight: 800;
-  color: var(--team);
+  color: var(--team-text, var(--team));
   font-size: clamp(0.8rem, 7cqh, 1.6rem);
   white-space: nowrap;
   overflow: hidden;
@@ -57,16 +62,33 @@
 
 .scoreboard__buttons {
   display: flex;
+  justify-content: center;
   gap: 4px;
+  width: 100%;
 }
 
 .scoreboard__buttons .w-btn {
   padding: 0 0.6em;
+  /* 좁은 카드에서는 두 버튼이 폭을 나눠 가져 서로 겹치지 않게 (WCAG 2.5.8: 24px 이상) */
+  flex: 0 1 auto;
+  min-width: 24px;
 }
 
 /* 팀이 5개 이상이면 2줄로 */
 .scoreboard:has(.scoreboard__team:nth-child(5)) .scoreboard__score {
   font-size: min(14cqh, 9cqw);
+}
+
+.scoreboard:has(.scoreboard__team:nth-child(5)) .scoreboard__team {
+  padding: 0.25em;
+  gap: 2px;
+}
+
+/* 팀 5개 이상: 버튼 36px (터치 권장 44px보다 작지만 WCAG 2.5.8의 24px보다 충분히 큼) */
+.scoreboard:has(.scoreboard__team:nth-child(5)) .scoreboard__buttons .w-btn {
+  flex: 1 1 0;
+  padding: 0;
+  min-height: 2.25rem;
 }
 
 .scoreboard__settings-teams {
@@ -82,6 +104,13 @@
 /* 낮은 위젯: 팀 이름 숨김 (점수·버튼 우선) */
 @container (max-height: 150px) {
   .scoreboard__name {
+    display: none;
+  }
+}
+
+/* 팀이 5개 이상(2줄)이고 낮은 위젯: 팀 이름 숨김 — 점수·버튼이 스크롤 없이 보이게 */
+@container (max-height: 260px) {
+  .scoreboard:has(.scoreboard__team:nth-child(5)) .scoreboard__name {
     display: none;
   }
 }

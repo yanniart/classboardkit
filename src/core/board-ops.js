@@ -2,7 +2,7 @@
  * 앱 상태({ boards, settings })를 바꾸는 순수 함수 모음.
  * 모두 새 상태를 반환하며, 바뀐 것이 없으면 입력 상태를 그대로 반환한다.
  */
-import { createBoard } from './schema.js';
+import { DEFAULT_WIDGET_STYLE, createBoard } from './schema.js';
 import { clampRect, placeNewRect } from './geometry.js';
 import { createId } from './utils/id.js';
 
@@ -171,6 +171,32 @@ export function setBackground(state, boardId, background, now = new Date()) {
       b.background.type === background.type && b.background.value === background.value
         ? b
         : { ...b, background: { type: background.type, value: background.value } },
+    now,
+  );
+}
+
+/**
+ * 보드의 위젯 모양 (M6). 기본값과 같으면 필드를 지워 저장 데이터를 이전과 같게 둔다.
+ * @param {AppState} state
+ * @param {string} boardId
+ * @param {{ look: string, accent: string }} style
+ * @param {Date} [now]
+ */
+export function setWidgetStyle(state, boardId, style, now = new Date()) {
+  const next = { look: style.look, accent: style.accent };
+  const isDefault = next.look === DEFAULT_WIDGET_STYLE.look && next.accent === DEFAULT_WIDGET_STYLE.accent;
+  return mapBoard(
+    state,
+    boardId,
+    (b) => {
+      const cur = b.widgetStyle ?? DEFAULT_WIDGET_STYLE;
+      if (cur.look === next.look && cur.accent === next.accent) return b;
+      if (isDefault) {
+        const { widgetStyle, ...rest } = b;
+        return rest;
+      }
+      return { ...b, widgetStyle: next };
+    },
     now,
   );
 }

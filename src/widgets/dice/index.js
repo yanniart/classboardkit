@@ -1,5 +1,5 @@
 import { h } from '../../ui/dom.js';
-import { button, createSettingsPanel, prefersReducedMotion, stepper } from '../shared/ui.js';
+import { button, createSettingsPanel, prefersReducedMotion, stepper, liveRegion } from '../shared/ui.js';
 import { MAX_DICE, MIN_DICE, createDiceState, pipCells, roll, rollValues, setCount, total } from './dice-logic.js';
 
 /** 굴리는 연출 길이와 면이 바뀌는 간격 */
@@ -35,11 +35,12 @@ export default {
 
     // 주사위 영역 자체를 눌러도 굴린다
     const tray = h('button', { className: 'dice__tray', attrs: { type: 'button' } });
-    const sum = h('p', { className: 'dice__sum', attrs: { 'aria-live': 'polite' } });
+    const sum = h('p', { className: 'dice__sum' });
     const rollButton = button({ variant: 'primary', iconName: 'dice', text: t('widget.dice.roll'), onClick: doRoll });
     const root = h('div', { className: 'dice' }, [tray, sum, h('div', { className: 'w-row' }, [rollButton])]);
     tray.addEventListener('click', doRoll);
     container.append(root);
+    const live = liveRegion(container);
 
     /** @param {number[]} values */
     function showFaces(values) {
@@ -63,12 +64,23 @@ export default {
           if (Date.now() - startedAt >= ROLL_MS) {
             stopRolling();
             paint();
+            announce();
             return;
           }
           showFaces(rollValues(state.count));
         }, ROLL_STEP_MS);
       }
       ctx.setState((s) => roll(s));
+      if (reduced) announce();
+    }
+
+    /** 굴린 결과를 낭독기에 한 번 (연출이 끝난 뒤) */
+    function announce() {
+      live.say(
+        state.count > 1
+          ? t('widget.dice.announce', { values: state.values.join(', '), n: total(state.values) })
+          : t('widget.dice.announceOne', { n: state.values[0] ?? 0 }),
+      );
     }
 
     function paint() {

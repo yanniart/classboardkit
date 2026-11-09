@@ -13,6 +13,7 @@ import draw from './draw/index.js';
 import image from './image/index.js';
 import noise from './noise/index.js';
 import qr from './qr/index.js';
+import symbols from './symbols/index.js';
 
 /** 기본 제공 위젯 — 배열 순서가 독 표시 순서 */
 export const BUILT_IN_WIDGETS = [
@@ -25,6 +26,7 @@ export const BUILT_IN_WIDGETS = [
   groups,
   scoreboard,
   traffic,
+  symbols,
   noise,
   text,
   draw,

@@ -20,14 +20,16 @@ import { QUIET_ZONE, qrPath } from '../widgets/qr/qr-logic.js';
  *   board: any,
  *   i18n: ReturnType<typeof import('../core/i18n.js').createI18n>,
  *   onExport: () => void,
+ *   returnFocus?: HTMLElement | null,
  * }} deps onExport: 링크가 너무 길 때 "파일로 내보내기"
  */
-export function openShareDialog({ board, i18n, onExport }) {
+export function openShareDialog({ board, i18n, onExport, returnFocus }) {
   const { t } = i18n;
   return openContentDialog({
     title: t('share.title', { name: board.name }),
     closeLabel: t('common.close'),
     className: 'share-dialog',
+    returnFocus,
     build(body, done) {
       const hasNames = boardHasNames(board);
       const exclude = /** @type {HTMLInputElement} */ (

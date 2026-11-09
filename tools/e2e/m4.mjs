@@ -49,7 +49,7 @@ await cdp('Page.navigate', { url: APP_URL });
 await ready();
 
 // ── 1. 독 순서 ──
-const EXPECTED_DOCK = (process.env.M4_DOCK ?? 'timer,stopwatch,clock,countdown,randomizer,dice,groups,scoreboard,traffic,noise,text,draw,image,qr').split(',');
+const EXPECTED_DOCK = (process.env.M4_DOCK ?? 'timer,stopwatch,clock,countdown,randomizer,dice,groups,scoreboard,traffic,symbols,noise,text,draw,image,qr').split(',');
 const dockTypes = await evaluate(`[...document.querySelectorAll('.dock__item')].map(b => b.dataset.type)`);
 check(`dock lists ${EXPECTED_DOCK.length} widgets in order`, dockTypes.join(',') === EXPECTED_DOCK.join(','), dockTypes.join(','));
 

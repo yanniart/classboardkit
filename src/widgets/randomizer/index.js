@@ -1,6 +1,6 @@
 import { h } from '../../ui/dom.js';
 import { pickOne } from '../../core/utils/random.js';
-import { button, createSettingsPanel, listEditor, prefersReducedMotion, toggle } from '../shared/ui.js';
+import { button, createSettingsPanel, listEditor, prefersReducedMotion, toggle, liveRegion } from '../shared/ui.js';
 import { parseItems } from '../shared/list.js';
 import {
   clearHistory,
@@ -33,7 +33,8 @@ export default {
     /** @type {ReturnType<typeof setInterval> | null} */
     let spin = null;
 
-    const result = h('div', { className: 'randomizer__result', attrs: { 'aria-live': 'polite' } });
+    // 연출 중 바뀌는 이름은 읽히지 않게 하고, 최종 결과만 live로 알림 (M6)
+    const result = h('div', { className: 'randomizer__result' });
     const meta = h('p', { className: 'randomizer__meta' });
     const recent = h('p', { className: 'randomizer__recent' });
     const pickButton = button({ variant: 'primary', iconName: 'shuffle', text: t('widget.randomizer.pick'), onClick: doPick });
@@ -53,6 +54,7 @@ export default {
       button({ variant: 'primary', iconName: 'pencil', text: t('widget.list.edit'), onClick: () => panel.open() }),
     ]);
     container.append(view, empty);
+    const live = liveRegion(container);
 
     function stopSpin() {
       if (spin !== null) clearInterval(spin);
@@ -66,8 +68,10 @@ export default {
       if (value === null) return;
       const pool = getAvailable(state);
       ctx.setState(next);
+      const announce = () => live.say(t('widget.randomizer.announce', { name: value }));
       if (prefersReducedMotion() || pool.length < 2) {
         paint();
+        announce();
         return;
       }
       // 연출: 후보 이름을 빠르게 바꿔 보여준 뒤 결과 표시
@@ -77,6 +81,7 @@ export default {
         if (Date.now() - startedAt >= SPIN_MS) {
           stopSpin();
           paint();
+          announce();
           return;
         }
         result.textContent = pickOne(pool) ?? '';

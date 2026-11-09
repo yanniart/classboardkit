@@ -8,6 +8,11 @@ export const APP_ID = 'classboardkit';
 export const THEMES = /** @type {const} */ (['system', 'light', 'dark', 'contrast']);
 export const BACKGROUND_TYPES = /** @type {const} */ (['color', 'gradient', 'image']);
 
+/** 보드 단위 위젯 모양 (M6 결정 D6·D7, 선택 필드 board.widgetStyle) */
+export const WIDGET_LOOKS = /** @type {const} */ (['solid', 'glass', 'outline']);
+export const WIDGET_ACCENTS = /** @type {const} */ (['default', 'blue', 'green', 'orange', 'red', 'purple', 'teal']);
+export const DEFAULT_WIDGET_STYLE = Object.freeze({ look: 'solid', accent: 'default' });
+
 /**
  * 버전별 마이그레이션. migrations[n]은 버전 n 데이터를 n+1로 변환한다.
  * @type {Record<number, (data: any) => any>}
@@ -96,6 +101,13 @@ export function validateBoard(board, path) {
   const bg = board.background;
   if (!isObject(bg) || !BACKGROUND_TYPES.includes(bg.type) || !isString(bg.value)) {
     errors.push(`${path}.background: must be { type: ${BACKGROUND_TYPES.join('|')}, value: string }`);
+  }
+  // 선택 필드 (M6): 없으면 기본 모양
+  if (board.widgetStyle !== undefined) {
+    const ws = board.widgetStyle;
+    if (!isObject(ws) || !WIDGET_LOOKS.includes(ws.look) || !WIDGET_ACCENTS.includes(ws.accent)) {
+      errors.push(`${path}.widgetStyle: must be { look: ${WIDGET_LOOKS.join('|')}, accent: ${WIDGET_ACCENTS.join('|')} }`);
+    }
   }
   if (!Array.isArray(board.widgets)) {
     errors.push(`${path}.widgets: must be an array`);

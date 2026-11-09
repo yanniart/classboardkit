@@ -3,8 +3,8 @@
 // - 새 버전은 대기 상태로 두고, 페이지가 "새로고침" 알림에서 SKIP_WAITING을 보내면 교체한다.
 // - PRECACHE·BUILD는 tools/sw-stamp.mjs가 생성한다 (직접 고치지 말 것, 테스트가 검증).
 
-const VERSION = '0.3.0';
-const BUILD = '13dfd716';
+const VERSION = '0.4.0';
+const BUILD = '01a1f23b';
 const CACHE = `cbk-v${VERSION}-${BUILD}`;
 const CACHE_PREFIX = 'cbk-';
 
@@ -18,12 +18,14 @@ const PRECACHE = [
   'assets/icons/icon-maskable-512.png',
   'assets/icons/icon-maskable.svg',
   'assets/icons/icon.svg',
+  'assets/symbols.svg',
   'index.html',
   'manifest.webmanifest',
   'src/app.js',
   'src/core/assets.js',
   'src/core/backgrounds.js',
   'src/core/board-ops.js',
+  'src/core/contrast.js',
   'src/core/geometry.js',
   'src/core/history.js',
   'src/core/i18n.js',
@@ -50,6 +52,7 @@ const PRECACHE = [
   'src/styles/widgets.css',
   'src/templates/index.js',
   'src/ui/actions.js',
+  'src/ui/announce.js',
   'src/ui/board-menu.js',
   'src/ui/canvas.js',
   'src/ui/dialog.js',
@@ -63,6 +66,7 @@ const PRECACHE = [
   'src/ui/share-dialog.js',
   'src/ui/share-open.js',
   'src/ui/shell.js',
+  'src/ui/shortcuts.js',
   'src/ui/template-dialog.js',
   'src/ui/undo-controls.js',
   'src/ui/updates.js',
@@ -103,6 +107,9 @@ const PRECACHE = [
   'src/widgets/stopwatch/index.js',
   'src/widgets/stopwatch/stopwatch-logic.js',
   'src/widgets/stopwatch/stopwatch.css',
+  'src/widgets/symbols/index.js',
+  'src/widgets/symbols/symbols-logic.js',
+  'src/widgets/symbols/symbols.css',
   'src/widgets/text/index.js',
   'src/widgets/text/text.css',
   'src/widgets/timer/index.js',

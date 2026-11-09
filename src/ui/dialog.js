@@ -1,6 +1,22 @@
 import { h } from './dom.js';
 
 /**
+ * 대화상자를 닫은 뒤 포커스 복귀 (WCAG 2.4.3, M6). 연 요소가 사라졌거나 숨겨졌으면
+ * (예: 보드 메뉴 팝오버를 닫고 연 경우) 대체 요소로 — 없으면 캔버스.
+ * @param {Element | null} opener
+ * @param {HTMLElement | null | undefined} fallback
+ */
+function restoreFocus(opener, fallback) {
+  // 닫힌 <details> 안의 버튼처럼 보이는 것 같아도 포커스를 못 받는 경우가 있어, 실제로 옮겨졌는지 확인하며 차례로 시도
+  const candidates = [opener, fallback, document.getElementById('canvas')];
+  for (const el of candidates) {
+    if (!(el instanceof HTMLElement) || el === document.body || el === document.documentElement || !el.isConnected) continue;
+    el.focus({ preventScroll: true });
+    if (document.activeElement === el) return;
+  }
+}
+
+/**
  * 모달 대화상자 (<dialog>). 확인 시 입력값(입력 모드) 또는 true, 취소 시 null.
  *
  * @param {{
@@ -10,10 +26,12 @@ import { h } from './dom.js';
  *   confirmLabel: string,
  *   cancelLabel: string,
  *   danger?: boolean,
- * }} options
+ *   returnFocus?: HTMLElement | null,
+ * }} options returnFocus: 연 요소가 숨겨졌을 때 포커스를 돌려줄 요소
  * @returns {Promise<string | true | null>}
  */
-export function openDialog({ title, message, input, confirmLabel, cancelLabel, danger = false }) {
+export function openDialog({ title, message, input, confirmLabel, cancelLabel, danger = false, returnFocus }) {
+  const opener = document.activeElement;
   return new Promise((resolve) => {
     const titleId = `dialog-title-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -75,6 +93,7 @@ export function openDialog({ title, message, input, confirmLabel, cancelLabel, d
     });
     dialog.addEventListener('close', () => {
       dialog.remove();
+      restoreFocus(opener, returnFocus);
       resolve(result);
     });
 
@@ -99,10 +118,12 @@ export function openDialog({ title, message, input, confirmLabel, cancelLabel, d
  *   closeLabel: string,
  *   className?: string,
  *   build: (body: HTMLElement, done: (value: T) => void) => void,
+ *   returnFocus?: HTMLElement | null,
  * }} options
  * @returns {Promise<T | null>}
  */
-export function openContentDialog({ title, closeLabel, className = '', build }) {
+export function openContentDialog({ title, closeLabel, className = '', build, returnFocus }) {
+  const opener = document.activeElement;
   return new Promise((resolve) => {
     const titleId = `dialog-title-${Math.random().toString(36).slice(2, 8)}`;
     const body = h('div', { className: 'dialog__body' });
@@ -123,6 +144,7 @@ export function openContentDialog({ title, closeLabel, className = '', build }) 
     });
     dialog.addEventListener('close', () => {
       dialog.remove();
+      restoreFocus(opener, returnFocus);
       resolve(result);
     });
 

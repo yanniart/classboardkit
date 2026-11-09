@@ -248,14 +248,59 @@
   box-shadow: 0 0 0 3px var(--color-accent);
 }
 
-/* 팀·글자 색상 팔레트 (라이트·다크 모두 대비 확보) */
+/*
+ * 팀·글자 색상 팔레트 (M6: 대비 기준 — tests/contrast.test.js가 검사)
+ * --team-*      테두리·막대·면 (위젯 바탕 대비 3:1 이상)
+ * --team-*-text 글자 (위젯 바탕 대비 4.5:1 이상)
+ */
 :root {
   --team-red: #e5484d;
   --team-blue: #3e7bfa;
   --team-green: #2f9e5b;
-  --team-orange: #f08c00;
+  --team-orange: #ce7800;
   --team-purple: #8e4ec6;
-  --team-teal: #12a594;
+  --team-teal: #119e8e;
   --team-pink: #d6409f;
+  --team-yellow: #b08700;
+  --team-red-text: #c53e42;
+  --team-blue-text: #356ad7;
+  --team-green-text: #267e49;
+  --team-orange-text: #a35f00;
+  --team-purple-text: #8e4ec6;
+  --team-teal-text: #0e7d70;
+  --team-pink-text: #be398e;
+  --team-yellow-text: #8a6a00;
+}
+
+/* 어두운 바탕 (다크·시스템 다크·고대비) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --team-orange: #f08c00;
+    --team-purple: #975ccb;
+    --team-teal: #12a594;
+    --team-yellow: #d4a300;
+    --team-red-text: #eb7074;
+    --team-blue-text: #6193fb;
+    --team-green-text: #46a96d;
+    --team-orange-text: #f08c00;
+    --team-purple-text: #b083d7;
+    --team-teal-text: #19a897;
+    --team-pink-text: #e06eb6;
+    --team-yellow-text: #d4a300;
+  }
+}
+:root[data-theme='dark'],
+:root[data-theme='contrast'] {
+  --team-orange: #f08c00;
+  --team-purple: #975ccb;
+  --team-teal: #12a594;
   --team-yellow: #d4a300;
+  --team-red-text: #eb7074;
+  --team-blue-text: #6193fb;
+  --team-green-text: #46a96d;
+  --team-orange-text: #f08c00;
+  --team-purple-text: #b083d7;
+  --team-teal-text: #19a897;
+  --team-pink-text: #e06eb6;
+  --team-yellow-text: #d4a300;
 }

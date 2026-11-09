@@ -10,15 +10,17 @@ import { h, icon } from './dom.js';
  * @param {{
  *   registry: { get: (type: string) => any },
  *   i18n: ReturnType<typeof import('../core/i18n.js').createI18n>,
+ *   returnFocus?: HTMLElement | null,
  * }} deps
  * @returns {Promise<any | null>}
  */
-export function chooseTemplate({ registry, i18n }) {
+export function chooseTemplate({ registry, i18n, returnFocus }) {
   const { t } = i18n;
   return openContentDialog({
     title: t('template.title'),
     closeLabel: t('dialog.cancel'),
     className: 'template-dialog',
+    returnFocus,
     build(body, done) {
       const grid = h(
         'div',

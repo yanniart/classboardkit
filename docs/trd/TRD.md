@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.4 | 2026-11-09 | @owner |
+| draft | 0.5 | 2026-11-09 | @owner |
 
 관련 문서: [PRD](../prd/PRD.md) · [데이터 스키마](data-schema.md) · [ADR 목록](adr/)
 
@@ -38,6 +38,7 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
        │   ├─ history.js      실행 취소 기록: record/undo/redo, 상한 50, 합치기(mergeKey), 없어진 대상 건너뜀 (M5, ADR-0009)
        │   ├─ undoable.js     실행 취소할 수 있는 작업 = board-ops 적용 + 역연산 항목 (M5)
        │   ├─ templates.js    템플릿 → 새 보드 (레지스트리로 위젯 기본 state, M5)
+       │   ├─ contrast.js     WCAG 상대 휘도·대비율 (토큰 대비 테스트, M6)
        │   ├─ share.js        공유 링크: 페이로드(이미지·명단 제외), 인코딩/디코딩(압축 주입), 길이 판정 (M5, ADR-0008)
        │   ├─ i18n.js         메시지 조회, 언어 감지
        │   └─ utils/          id, debounce, memory-storage, sound(Web Audio)
@@ -45,6 +46,8 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
        │   ├─ shell.js        언어·테마 설정, 알림(error/info, 매개변수, 액션 버튼, 자동 닫힘 시간)
        │   ├─ actions.js      "적용 + 기록" 단일 헬퍼 perform(op), 실행 취소/다시 실행, 삭제 알림의 실행 취소 버튼 (M5)
        │   ├─ undo-controls.js 툴바 실행 취소·다시 실행 버튼, 단축키 (M5)
+       │   ├─ announce.js     낭독기 전용 알림 영역(#announcer, 300ms 디바운스) (M6)
+       │   ├─ shortcuts.js    단축키 도움말(? 키·설정 버튼), "위젯 독으로 건너뛰기" (M6)
        │   ├─ template-dialog.js 템플릿 고르기 대화상자 (메뉴를 열 때 동적 import, M5)
        │   ├─ share-dialog.js 공유 링크 대화상자: 복사·공유·QR·길이 초과 안내 (동적 import, M5)
        │   ├─ share-open.js   #share= 링크 열기: 디코딩·검증·확인 후 추가 (동적 import, M5)
@@ -64,6 +67,7 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
            ├─ shared/         ui.js(설정 패널·입력 요소), list.js(명단 파싱)
            ├─ timer/ stopwatch/ clock/ randomizer/ groups/ scoreboard/ traffic/ text/
            ├─ countdown/ dice/ draw/ image/ noise/ qr/   (M4)
+           ├─ symbols/         활동 상징 (M6, 그림은 assets/symbols.svg)
            │                  각 index.js + *.css (+ *-logic.js: 순수 상태 전이)
        templates/index.js     보드 템플릿 6종 데이터 (M5, i18n 키·비율 좌표)
        vendor/qrcodegen.js    QR 인코더 (Nayuki v1.4.0, 원본 그대로, QR 위젯이 지연 로드 — ADR-0006)
@@ -118,7 +122,7 @@ export default {
 
 - 드래그는 제목 막대로만 시작해 위젯 내부 조작(버튼·입력)과 충돌하지 않는다 (태블릿 리스크 대응)
 - `.canvas`는 `z-index: 0`으로 쌓임 맥락을 만들어 위젯 z가 커져도 툴바·독을 덮지 않는다
-- 독이 넘치면(위젯 14종, 태블릿 세로) 가로 스크롤 + 남은 쪽 끝 흐림(`has-more-start/end`), 키보드 포커스 시 해당 항목이 보이게 스크롤
+- 독이 넘치면(위젯 15종, 태블릿 세로) 가로 스크롤 + 남은 쪽 끝 흐림(`has-more-start/end`), 키보드 포커스 시 해당 항목이 보이게 스크롤
 
 ### 2.2.2 M4 위젯 구현 규칙
 - **그리기**: 획을 벡터로 저장(data-schema §4). `<canvas>`(devicePixelRatio 반영), Pointer Events + `touch-action: none`, 획이 끝날 때 한 번만 `setState`. 첫 획의 영역 비율(`aspect`)로 **contain** 배치 → 위젯 크기가 바뀌어도 글씨가 늘어나지 않음. 지우개는 `destination-out` 획. 양자화(0~10000) + RDP 단순화(허용 오차 0.2%), 위젯당 점 20,000개 상한. 'ink' 색은 테마 글자색을 따름
@@ -150,6 +154,32 @@ export default {
 - **템플릿**: `src/templates/index.js` 데이터 → `createBoardFromTemplate`(현재 언어로 문구, 위젯 기본 state에 덮어쓰기, 새 ID). 배치는 위 10%(툴바)·아래 12%(독)를 비우고 겹치지 않게 — 단위 테스트로 강제
 - **공유 링크** (ADR-0008): 형식 `#share=1.<base64url(deflate-raw(JSON))>`, JSON = 내보내기 형식. 링크 32,000자 초과 → 파일 내보내기 안내, 2,000자 이하 → QR(오류 정정 L). `CompressionStream('deflate-raw')` 미지원이면 메뉴 숨김
 - 템플릿·공유 대화상자 모듈은 메뉴를 열 때 동적 import → 첫 로드에 포함되지 않음 (precache에는 포함되어 오프라인 동작)
+
+### 2.2.4 접근성 (M6, NFR-005, ADR-0010)
+- **구조**: 툴바 2개는 이름 있는 `<section>`(보드 도구·화면 설정), 캔버스 `<main>`, 독 `<nav>`. DOM 순서 = 탭 순서: 건너뛰기 링크 → 보드 툴바 → 화면 설정 → 캔버스(위젯) → 독. `<h1>`(숨김)은 보드 도구 영역 안
+- **포커스 표시**: 전역 `:focus-visible` = 3px `--color-focus` 링 + 요소와 링 사이 2px 바탕색 띠(`box-shadow`) → 사진·어두운 배경에서도 3:1. 위젯 본문은 `overflow: hidden`이라 텍스트 위젯 입력은 안쪽 링. 선택됨(`aria-pressed`)은 안쪽 링, 포커스는 바깥 링
+- **포커스 가림 방지(2.4.11)**: 위쪽 알림이 포커스된 요소(위젯은 제목 막대)를 완전히 덮으면 `.notices--low`로 독 위로 이동
+- **대화상자 포커스 복귀**: 연 요소 → (숨겨졌으면) `returnFocus`(보드 메뉴 버튼) → 캔버스 순으로, 실제로 포커스가 옮겨졌는지 확인하며 시도
+- **위젯 프레임**: `aria-roledescription="위젯"` + 이름 + `aria-describedby="widget-help"`(조작 안내 1개 공유). 키보드 이동·크기 조절 시 `#announcer`에 "타이머: 가로 30%, 세로 23%"
+- **낭독기 알림 정책** — 위젯은 `widgets/shared/ui.js`의 `liveRegion()`으로 사용자 조작의 **최종 결과만** 알린다 (연출 중 바뀌는 글자는 live 아님, 페이지 로드·다시 그리기에서는 알리지 않음):
+
+| 사건 | 알림 | 방식 |
+|---|---|---|
+| 타이머 종료 | "시간 종료!" | assertive (기존 `.timer__status`) |
+| 랜덤 뽑기 · 주사위 | "뽑힌 사람: 김민수" · "주사위 1, 3, 합계 4" | polite, 연출이 끝난 뒤 1회 |
+| 모둠 편성 | "8명 · 4개 모둠" | polite, 만들기·다시 섞기 직후 |
+| 점수 변경 | "1팀 5점" | polite, ± 버튼으로 바꾼 팀만 |
+| 신호등 · 활동 상징 | 상태 문구 | polite |
+| 위젯 추가·삭제·실행 취소 | 알림 띠 문구 | `#notices` (status) |
+| 키보드 이동·크기 | 위치·크기 % | `#announcer`, 300ms 디바운스 |
+| 시계·타이머·스톱워치 숫자 | 읽지 않음 | `aria-live="off"` |
+
+- **색**: 팀 색은 `--team-*`(테두리·면, 바탕 대비 3:1) / `--team-*-text`(글자, 4.5:1) 두 벌, 테마별 값. 신호등 문구·점수판 팀 이름·모둠 이름·글자 색·위젯 강조색이 모두 이 토큰 → `tests/contrast.test.js`가 테마 3종 × 바탕 2종을 계산
+- **강제 색상 모드**(`forced-colors: active`): 위젯·버튼 경계 `CanvasText`/`ButtonText`, 선택 상태 `Highlight`, 포커스 `Highlight`. 색이 곧 내용인 견본·신호등·그림·QR·팀 색은 `forced-color-adjust: none`. app.css보다 먼저 로드되므로 선택자에 `:root`를 붙여 우선
+- **움직임 줄이기**: 전역 규칙에 `animation-iteration-count: 1` (반복 애니메이션이 1ms 간격으로 번쩍이는 문제 방지), 뽑기·주사위 연출 생략
+- **대상 크기(2.5.8)**: 점수판은 카드가 3.75rem보다 좁아지면 열을 줄이고, 그래도 모자라면 겹치는 대신 스크롤. 팀 5개 이상은 버튼 36px(24px 이상)
+- **위젯 모양**(M6 결정 D6): 캔버스 `data-look`(solid·glass·outline)·`data-accent` → 위젯 배경·테두리·위쪽 띠·제목 색. 고대비 테마·강제 색상 모드에서는 적용 안 함
+- **예외**: 그리기 획은 포인터 전용(TRD 2.2.2) — 도구 막대는 키보드 가능
 
 ### 2.3 좌표계
 - 위젯 위치·크기는 **캔버스 대비 비율(0~1)** 로 저장 → 노트북·태블릿 간 화면 비율이 달라도 동일 배치 ([ADR-0004](adr/ADR-0004-relative-coordinates.md))
@@ -218,6 +248,8 @@ export default {
 | E2E | 실제 마우스·터치·키보드 입력으로 화면 조작 검증 (로컬 전용, CI 제외) | `tools/e2e/*.mjs` (Edge/Chrome 헤드리스 + DevTools Protocol, 의존성 없음) |
 | 수동 | 기기·브라우저 체크리스트 (노트북 Chrome/Edge/Safari, iPad Safari, Android Chrome) | `docs/trd/qa-checklist.md` |
 | 품질 | Lighthouse (데스크톱·모바일 프리셋) | `npx lighthouse@12` + 로컬 Edge(`CHROME_PATH`), 요약: `tools/lh-summary.mjs` |
+| 접근성 (M6) | 40개 화면 상태 axe(WCAG 2.0·2.1·2.2 AA + best-practice) + 접근성 트리 이름 검사, 색 대비 토큰 계산 | `tools/e2e/a11y-audit.mjs`·`m6.mjs`(개발 전용 axe-core, ADR-0010), `tests/contrast.test.js` |
+| 성능 | 첫 로드에 실제로 요청된 파일 gzip 합계, 지연 로드 모듈이 섞이지 않았는지 | `tools/first-load.mjs` |
 
 - 테스트 파일: `tests/*.test.js` — DOM 비의존 모듈만 import (QR 라이브러리는 `node:vm`에서 일반 스크립트로 실행해 검사)
 - E2E 보조: `launch({ args })`로 브라우저 인자 전달(소음 측정기용 `--use-fake-device-for-media-stream`·`--use-fake-ui-for-media-stream`), `tools/e2e/png.mjs`(의존성 없는 PNG 생성), `ready()`(앱 본체가 뜰 때까지 대기)
@@ -255,3 +287,5 @@ docs/
 | (없음) | — | — | MVP | — |
 | Nayuki QR Code generator v1.4.0 (`src/vendor/qrcodegen.js`) | F-109 QR 인코딩 | MIT | M4 | 결정: 원본 벤더링, 지연 로드 ([ADR-0006](adr/ADR-0006-qr-library-vendoring.md)) |
 | 아이콘 | UI 아이콘 | 자체 제작 (MIT) | M0 | 결정: `assets/icons.svg` 스프라이트 |
+| 활동 상징 픽토그램 | F-115 | 자체 제작 (MIT) | M6 | 결정: `assets/symbols.svg` 12종, 위젯을 그릴 때만 요청 |
+| axe-core 4.10.3 (**개발 전용**, `.tools/axe/`, git 제외) | 접근성 자동 점검 | MPL-2.0 | M6 | 결정: 배포물·런타임에 포함하지 않음 ([ADR-0010](adr/ADR-0010-dev-accessibility-testing.md)) |

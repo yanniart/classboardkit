@@ -64,22 +64,10 @@
   overflow-wrap: anywhere;
 }
 
-.traffic[data-light='red'] .traffic__label { color: #d92d20; }
-.traffic[data-light='yellow'] .traffic__label { color: #b38600; }
-.traffic[data-light='green'] .traffic__label { color: #1f8f3f; }
-
-:root[data-theme='dark'] .traffic[data-light='red'] .traffic__label,
-:root[data-theme='contrast'] .traffic[data-light='red'] .traffic__label { color: #ff6b62; }
-:root[data-theme='dark'] .traffic[data-light='yellow'] .traffic__label,
-:root[data-theme='contrast'] .traffic[data-light='yellow'] .traffic__label { color: #ffd84d; }
-:root[data-theme='dark'] .traffic[data-light='green'] .traffic__label,
-:root[data-theme='contrast'] .traffic[data-light='green'] .traffic__label { color: #5fdc7f; }
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .traffic[data-light='red'] .traffic__label { color: #ff6b62; }
-  :root:not([data-theme]) .traffic[data-light='yellow'] .traffic__label { color: #ffd84d; }
-  :root:not([data-theme]) .traffic[data-light='green'] .traffic__label { color: #5fdc7f; }
-}
+/* 문구 색: 대비 검증된 팀 글자색 토큰 (테마별 값은 styles/widgets.css, tests/contrast.test.js) */
+.traffic[data-light='red'] .traffic__label { color: var(--team-red-text); }
+.traffic[data-light='yellow'] .traffic__label { color: var(--team-yellow-text); }
+.traffic[data-light='green'] .traffic__label { color: var(--team-green-text); }
 
 @container (max-height: 160px) {
   .traffic__label {

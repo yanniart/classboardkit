@@ -41,20 +41,20 @@
   font-size: clamp(0.85rem, 6.5cqh, 1.8rem);
 }
 
-.groups__card[data-index='0'] { --group-color: var(--team-red); }
-.groups__card[data-index='1'] { --group-color: var(--team-blue); }
-.groups__card[data-index='2'] { --group-color: var(--team-green); }
-.groups__card[data-index='3'] { --group-color: var(--team-orange); }
-.groups__card[data-index='4'] { --group-color: var(--team-purple); }
-.groups__card[data-index='5'] { --group-color: var(--team-teal); }
-.groups__card[data-index='6'] { --group-color: var(--team-pink); }
-.groups__card[data-index='7'] { --group-color: var(--team-yellow); }
+.groups__card[data-index='0'] { --group-color: var(--team-red); --group-text: var(--team-red-text); }
+.groups__card[data-index='1'] { --group-color: var(--team-blue); --group-text: var(--team-blue-text); }
+.groups__card[data-index='2'] { --group-color: var(--team-green); --group-text: var(--team-green-text); }
+.groups__card[data-index='3'] { --group-color: var(--team-orange); --group-text: var(--team-orange-text); }
+.groups__card[data-index='4'] { --group-color: var(--team-purple); --group-text: var(--team-purple-text); }
+.groups__card[data-index='5'] { --group-color: var(--team-teal); --group-text: var(--team-teal-text); }
+.groups__card[data-index='6'] { --group-color: var(--team-pink); --group-text: var(--team-pink-text); }
+.groups__card[data-index='7'] { --group-color: var(--team-yellow); --group-text: var(--team-yellow-text); }
 
 .groups__name {
   margin: 0 0 0.3em;
   font-size: 1em;
   font-weight: 800;
-  color: var(--group-color);
+  color: var(--group-text, var(--group-color));
 }
 
 .groups__members {

@@ -1,6 +1,7 @@
 import { duplicateBoard, getActiveBoard, setActiveBoard } from '../core/board-ops.js';
 import { createBoard } from '../core/schema.js';
-import { addBoardsOp, deleteBoardOp, renameBoardOp, setBackgroundOp } from '../core/undoable.js';
+import { addBoardsOp, deleteBoardOp, renameBoardOp, setBackgroundOp, setWidgetStyleOp } from '../core/undoable.js';
+import { DEFAULT_WIDGET_STYLE, WIDGET_ACCENTS, WIDGET_LOOKS } from '../core/schema.js';
 import { BACKGROUND_PRESETS, resolveBackground } from '../core/backgrounds.js';
 import {
   MAX_IMPORT_SIZE,
@@ -61,12 +62,15 @@ export function mountBoardMenu({ root, store, i18n, notify, actions: history, re
     file: /** @type {HTMLInputElement} */ (root.querySelector('#import-file')),
     bgFile: /** @type {HTMLInputElement} */ (root.querySelector('#background-file')),
     emptyTemplate: /** @type {HTMLButtonElement} */ (root.querySelector('#empty-template')),
+    widgetStyle: /** @type {HTMLElement} */ (root.querySelector('#widget-style')),
   };
   const { t } = i18n;
   const close = () => (el.details.open = false);
+  /** 메뉴에서 연 대화상자를 닫으면 포커스는 보드 메뉴 버튼으로 (팝오버는 닫혀 있으므로) */
+  const summary = /** @type {HTMLElement} */ (el.details.querySelector('summary'));
 
   /** 대화상자 버튼 공통 라벨 */
-  const buttons = () => ({ cancelLabel: t('dialog.cancel') });
+  const buttons = () => ({ cancelLabel: t('dialog.cancel'), returnFocus: summary });
 
   /** "보드 n" 형식의 겹치지 않는 새 이름 */
   function nextBoardName() {
@@ -86,7 +90,7 @@ export function mountBoardMenu({ root, store, i18n, notify, actions: history, re
       close();
       // 템플릿 데이터·대화상자는 쓸 때만 불러온다 (첫 화면 영향 0)
       const { chooseTemplate } = await import('./template-dialog.js');
-      const board = await chooseTemplate({ registry, i18n });
+      const board = await chooseTemplate({ registry, i18n, returnFocus: summary });
       if (board) history.perform((s) => addBoardsOp(s, [board]));
     },
     async rename() {
@@ -251,7 +255,7 @@ export function mountBoardMenu({ root, store, i18n, notify, actions: history, re
       if (!board) return;
       close();
       const { openShareDialog } = await import('./share-dialog.js');
-      await openShareDialog({ board, i18n, onExport: () => void download([board], board.name) });
+      await openShareDialog({ board, i18n, returnFocus: summary, onExport: () => void download([board], board.name) });
     },
   };
 
@@ -377,11 +381,51 @@ export function mountBoardMenu({ root, store, i18n, notify, actions: history, re
     }
   });
 
+  /** 위젯 모양 (M6): 모양 3종 + 강조색 7종, 보드 단위 */
+  function renderWidgetStyle() {
+    const board = getActiveBoard(store.getState());
+    const cur = board?.widgetStyle ?? DEFAULT_WIDGET_STYLE;
+    /** @param {Partial<{ look: string, accent: string }>} patch */
+    const apply = (patch) => {
+      const id = getActiveBoard(store.getState())?.id;
+      if (id) history.perform((s) => setWidgetStyleOp(s, id, { ...cur, ...patch }));
+    };
+    const looks = h(
+      'div',
+      { className: 'widget-style__looks', attrs: { role: 'group', 'aria-label': t('widgetStyle.look') } },
+      WIDGET_LOOKS.map((look) => {
+        const b = h('button', {
+          className: 'widget-style__look',
+          attrs: { type: 'button', 'aria-pressed': String(cur.look === look) },
+          dataset: { look },
+        }, [h('span', { className: 'widget-style__preview', attrs: { 'aria-hidden': 'true' } }), h('span', { text: t(`widgetStyle.looks.${look}`) })]);
+        b.addEventListener('click', () => apply({ look }));
+        return b;
+      }),
+    );
+    const accents = h(
+      'div',
+      { className: 'widget-style__accents', attrs: { role: 'group', 'aria-label': t('widgetStyle.accent') } },
+      WIDGET_ACCENTS.map((accent) => {
+        const label = accent === 'default' ? t('color.default') : t(`color.${accent}`);
+        const b = h('button', {
+          className: 'widget-style__accent',
+          attrs: { type: 'button', 'aria-pressed': String(cur.accent === accent), 'aria-label': label, title: label },
+          dataset: { accent },
+        });
+        b.addEventListener('click', () => apply({ accent }));
+        return b;
+      }),
+    );
+    el.widgetStyle.replaceChildren(looks, accents);
+  }
+
   function render() {
     const board = getActiveBoard(store.getState());
     el.name.textContent = board?.name ?? '';
     renderList();
     renderSwatches();
+    renderWidgetStyle();
     renderBackupStatus();
   }
 

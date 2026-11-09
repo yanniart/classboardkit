@@ -257,11 +257,15 @@ export default {
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(stage);
     // 테마가 바뀌면 'ink' 색이 달라지므로 다시 그림
-    const themeObserver = new MutationObserver(() => {
+    const onThemeChange = () => {
       paintTools();
       redraw();
-    });
+    };
+    const themeObserver = new MutationObserver(onThemeChange);
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    // "시스템" 테마에서 OS 다크 모드가 바뀌어도 (M4 이월 → M6)
+    const schemeQuery = matchMedia('(prefers-color-scheme: dark)');
+    schemeQuery.addEventListener('change', onThemeChange);
 
     notice.hidden = true;
     paintTools();
@@ -275,6 +279,7 @@ export default {
       destroy() {
         resizeObserver.disconnect();
         themeObserver.disconnect();
+        schemeQuery.removeEventListener('change', onThemeChange);
         if (noticeTimer !== null) clearTimeout(noticeTimer);
         root.remove();
       },

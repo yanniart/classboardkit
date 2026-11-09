@@ -16,7 +16,9 @@ import {
   restoreWidget,
   setBackground,
   setWidgetRect,
+  setWidgetStyle,
 } from './board-ops.js';
+import { DEFAULT_WIDGET_STYLE } from './schema.js';
 
 /** @typedef {import('./history.js').HistoryEntry} HistoryEntry */
 /** @typedef {{ state: any, entry: HistoryEntry }} OpResult */
@@ -245,6 +247,31 @@ export function addBoardsOp(state, boards, { index = state.boards.length } = {})
         if (out === s) return s;
         return { ...out, settings: { ...out.settings, activeBoardId: snapshots[0].board.id } };
       },
+    },
+  };
+}
+
+/**
+ * 위젯 모양 변경 (M6)
+ * @param {any} state
+ * @param {string} boardId
+ * @param {{ look: string, accent: string }} style
+ * @returns {OpResult | null}
+ */
+export function setWidgetStyleOp(state, boardId, style) {
+  const board = findBoard(state, boardId);
+  if (!board) return null;
+  const next = setWidgetStyle(state, boardId, style);
+  if (next === state) return null;
+  const before = { ...(board.widgetStyle ?? DEFAULT_WIDGET_STYLE) };
+  const after = { look: style.look, accent: style.accent };
+  return {
+    state: next,
+    entry: {
+      label: 'history.action.widgetStyle',
+      boardId,
+      undo: (s) => setWidgetStyle(s, boardId, before),
+      redo: (s) => setWidgetStyle(s, boardId, after),
     },
   };
 }

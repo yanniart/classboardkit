@@ -1,5 +1,5 @@
 import { h } from '../../ui/dom.js';
-import { button, createSettingsPanel, field, stepper, textInput } from '../shared/ui.js';
+import { button, createSettingsPanel, field, stepper, textInput, liveRegion } from '../shared/ui.js';
 import {
   MAX_NAME_LENGTH,
   MAX_TEAMS,
@@ -32,6 +32,10 @@ export default {
 
     const root = h('div', { className: 'scoreboard' });
     container.append(root);
+    const live = liveRegion(container);
+    /** 버튼으로 점수를 바꾼 팀 — 다음 그리기에서 "1팀 5점"을 알림 */
+    /** @type {string | null} */
+    let announceTeam = null;
 
     /** @param {{ name: string }} team @param {number} index */
     const teamName = (team, index) => team.name || t('widget.scoreboard.teamN', { n: index + 1 });
@@ -48,7 +52,7 @@ export default {
       root.replaceChildren(
         ...state.teams.map((team, i) => {
           const name = h('p', { className: 'scoreboard__name' });
-          const score = h('p', { className: 'scoreboard__score', attrs: { 'aria-live': 'polite' } });
+          const score = h('p', { className: 'scoreboard__score' });
           const label = teamName(team, i);
           const card = h('section', { className: 'scoreboard__team', dataset: { color: team.color } }, [
             name,
@@ -57,13 +61,19 @@ export default {
               button({
                 text: '−1',
                 label: t('widget.scoreboard.minus', { name: label }),
-                onClick: () => ctx.setState((s) => changeScore(s, team.id, -1)),
+                onClick: () => {
+                  announceTeam = team.id;
+                  ctx.setState((s) => changeScore(s, team.id, -1));
+                },
               }),
               button({
                 text: '+1',
                 variant: 'primary',
                 label: t('widget.scoreboard.plus', { name: label }),
-                onClick: () => ctx.setState((s) => changeScore(s, team.id, 1)),
+                onClick: () => {
+                  announceTeam = team.id;
+                  ctx.setState((s) => changeScore(s, team.id, 1));
+                },
               }),
             ]),
           ]);
@@ -86,7 +96,9 @@ export default {
         c.name.textContent = teamName(team, i);
         c.score.textContent = String(team.score);
         c.card.classList.toggle('is-leader', top.has(team.id));
+        if (announceTeam === team.id) live.say(t('widget.scoreboard.announce', { team: teamName(team, i), n: team.score }));
       });
+      announceTeam = null;
     }
 
     const panel = createSettingsPanel(container, {

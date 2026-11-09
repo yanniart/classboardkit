@@ -44,9 +44,13 @@ function applyRect(frame, r) {
  *   registry: ReturnType<typeof import('../core/registry.js').createRegistry>,
  *   i18n: ReturnType<typeof import('../core/i18n.js').createI18n>,
  *   actions: ReturnType<typeof import('./actions.js').createActions>,
+ *   announce: (text: string) => void,
  * }} deps
  */
-export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions }) {
+export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions, announce }) {
+  // 위젯 프레임 조작 안내 (모든 프레임이 aria-describedby로 공유) — 언어가 바뀌면 render에서 갱신
+  const help = h('p', { className: 'sr-only', attrs: { id: 'widget-help' } });
+  canvas.append(help);
   /** @type {Map<string, Entry>} */
   const entries = new Map();
   /** @type {string | null} */
@@ -81,6 +85,8 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions
 
   /** @param {ReturnType<typeof resolveBackground>} bg @param {string} boardKey */
   function applyBackground(bg, boardKey) {
+    // 사진 배경이면 빈 보드 안내를 반투명 판 위에 (사진에 따라 글자가 묻히지 않게 — M4 이월)
+    canvas.toggleAttribute('data-image', Boolean(bg.imageId));
     if (!bg.imageId) {
       backgroundImageId = null;
       canvas.style.background = bg.css ?? '';
@@ -131,6 +137,7 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions
           tabindex: '0',
           'aria-label': title,
           'aria-roledescription': i18n.t('widget.roleDescription'),
+          'aria-describedby': 'widget-help',
         },
         dataset: { id: widget.id, type: widget.type },
       },
@@ -261,6 +268,15 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions
     const rect = event.altKey ? resizeRect(start, dx, dy, entry.minSize) : moveRect(start, dx, dy);
     // 연속 키 입력은 실행 취소 한 번에 되돌아가도록 합친다
     act((s, b) => setRectOp(s, b, id, rect, { kind: event.altKey ? 'resize' : 'move', merge: true }));
+    // 낭독기: 바뀐 위치·크기 (연속 입력은 마지막 값만)
+    const pct = (/** @type {number} */ n) => Math.round(n * 100);
+    const name = entry.frame.getAttribute('aria-label') ?? '';
+    const now = entries.get(id)?.widget ?? entry.widget;
+    announce(
+      event.altKey
+        ? i18n.t('a11y.resized', { name, w: pct(now.w), h: pct(now.h) })
+        : i18n.t('a11y.moved', { name, x: pct(now.x), y: pct(now.y) }),
+    );
   }
 
   /** @param {Entry} entry */
@@ -286,9 +302,14 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions
       destroyAll();
       renderedBoardId = board.id;
       renderedLocale = i18n.locale;
+      help.textContent = i18n.t('a11y.widgetHelp');
     }
 
     applyBackground(resolveBackground(board.background), board.id);
+    // 위젯 모양 (M6): CSS가 data-look·data-accent로 처리, 기본값이면 속성 없음
+    const style = board.widgetStyle;
+    canvas.dataset.look = style?.look ?? 'solid';
+    canvas.dataset.accent = style?.accent ?? 'default';
 
     const seen = new Set();
     for (const widget of board.widgets) {

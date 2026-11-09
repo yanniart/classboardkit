@@ -17,7 +17,7 @@ const files = [...new Set(urls.map((u) => new URL(u).pathname.split('#')[0]))]
   .filter((p) => !p.endsWith('sw.js'));
 let total = 0;
 for (const f of files) total += gzipSync(readFileSync(join(ROOT, f)), { level: 9 }).length;
-const lazy = files.filter((f) => /template|share-dialog|share-open|qrcodegen/.test(f));
+const lazy = files.filter((f) => /template|share-dialog|share-open|qrcodegen|symbols\.svg/.test(f));
 console.log(`files ${files.length}, gzip ${(total / 1024).toFixed(1)} KB, lazy modules loaded: ${lazy.join(',') || 'none'}`);
 b.close();
 process.exit(0);

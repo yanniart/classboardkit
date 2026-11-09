@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.4 | 2026-11-09 | @owner |
+| draft | 0.5 | 2026-11-09 | @owner |
 
 현재 스키마 버전: **1**
 
@@ -57,6 +57,7 @@
 |---|---|---|
 | `background.type` | `"color" \| "gradient" \| "image"` | `image`는 M4 (F-007): `value` = 이미지 ID |
 | `background.value` | string | 색상 코드, 프리셋 키, 또는 이미지 ID (`a_` + 16진수 16자, [ADR-0007](adr/ADR-0007-indexeddb-image-assets.md)) |
+| `widgetStyle?` | `{ look: "solid"\|"glass"\|"outline", accent: "default"\|"blue"\|"green"\|"orange"\|"red"\|"purple"\|"teal" }` | 선택 (M6): 보드의 위젯 모양. 없으면 `solid`·`default` — 기본값으로 되돌리면 필드를 지운다. 내보내기·공유 링크·복제에 그대로 |
 
 ## 3. Widget
 
@@ -85,6 +86,7 @@
 | `groups` | `items: string[]`, `by: "count"\|"size"`, `n: number` (1~20), `result: string[][]` (명단·규칙 변경 시 비움) |
 | `scoreboard` | `teams: {id, name, color, score}[]` (2~8팀, `name` 빈 값 = 언어별 기본 "n팀", `color` ∈ red·blue·green·orange·purple·teal·pink·yellow, `score` -999~9999) |
 | `traffic` | `light: "red"\|"yellow"\|"green"`, `labels: {red, yellow, green}` (빈 값 = 언어별 기본 문구, 각 40자) |
+| `symbols` (M6) | `symbol`: `quiet\|raise-hand\|listen\|solo\|pair\|group\|write\|read\|present\|think\|tidy\|break`, `label`: 문구 (빈 값 = 언어별 상징 이름, 40자). 다른 상징을 고르면 `label`은 비움. 알 수 없는 상징은 `quiet`로 표시(데이터는 보존) |
 | `text` | `content` (최대 2000자), `size: "s"\|"m"\|"l"\|"xl"`, `align: "left"\|"center"\|"right"`, `color?: "default"\|"red"\|"blue"\|"green"\|"orange"\|"purple"` (M2 추가, 없으면 default) |
 | `dice` (M4) | `count` 1~6, `values: number[]` (마지막 결과, 각 1~6, 굴리기 전·개수 변경 후 빈 배열), `sides: 6` |
 | `countdown` (M4) | `title` (최대 60자, 빈 값 = 언어별 기본), `target: "YYYY-MM-DDTHH:mm"` (**시간대 없는 로컬 시각** — 기기 시간대가 바뀌어도 그 날 그 시각), `showSeconds: boolean` |
@@ -135,5 +137,6 @@ IndexedDB (M4): DB `classboardkit`, 저장소 `assets` (keyPath `id`) — `{ id,
 |---|---|---|
 | 1 | 2026-11-04 | 최초 정의 |
 | 1 | 2026-11-05 | Settings 선택 필드 `lastExportAt`·`keepAwake` 추가 (버전 유지), 내보내기 파일명·가져오기 규칙 명시 |
+| 1 | 2026-11-09 (M6) | 위젯 `symbols` state, Board 선택 필드 `widgetStyle` 추가 (버전 유지 — 이전 앱은 필드를 무시) |
 | 1 | 2026-11-09 (M5) | 공유 링크 형식(§1.1) 추가 — 내보내기 형식 재사용, 저장 스키마·버전 변화 없음 |
 | 1 | 2026-11-05 (M4) | 위젯 6종 state(dice·countdown·draw·image·noise·qr), 배경 `image`, 내보내기 `assets` 선택 필드, 가져오기 한도 30MB, IndexedDB 저장소 (버전 유지) |

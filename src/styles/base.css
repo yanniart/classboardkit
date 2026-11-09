@@ -34,9 +34,14 @@ textarea {
   color: inherit;
 }
 
+/*
+ * 포커스 표시 (WCAG 2.4.7·1.4.11, M6): 3px 링 + 요소와 링 사이 2px 바탕색 띠
+ * → 어두운 그라데이션·사진 배경 위에서도 링이 주변과 3:1 이상 대비
+ */
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-surface);
 }
 
 [hidden] {
@@ -77,6 +82,75 @@ textarea {
   *::before,
   *::after {
     animation-duration: 1ms !important;
+    /* 반복 애니메이션(타이머 종료 깜박임 등)이 1ms마다 번쩍이지 않게 한 번만 (M6) */
+    animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Windows 강제 색상(고대비) 모드 (M6 결정 D8): 시스템 색으로 경계·선택·포커스를 표시.
+ * 색 자체가 내용인 요소(배경 견본·팀 색·신호등·그림·QR)는 원래 색 유지.
+ */
+@media (forced-colors: active) {
+  :root :focus-visible {
+    outline: 3px solid Highlight;
+  }
+
+  :root .swatch,
+  :root .w-color,
+  :root .widget-style__accent,
+  :root .traffic__lamp,
+  :root .draw__canvas,
+  :root .qr__code,
+  :root .share__qr-code,
+  :root .template-card__cell {
+    forced-color-adjust: none;
+  }
+
+  :root .widget {
+    border: 2px solid CanvasText;
+  }
+
+  :root .widget__bar {
+    border-bottom: 1px solid CanvasText;
+  }
+
+  :root .icon-button,
+  :root .chip,
+  :root .menu-button,
+  :root .button,
+  :root .w-btn,
+  :root .w-seg__opt,
+  :root .dock__item,
+  :root .template-card {
+    border: 1px solid ButtonText;
+  }
+
+  /* 선택 상태는 배경색만으로는 사라지므로 시스템 강조색으로 */
+  :root .icon-button[aria-pressed='true'],
+  :root .w-seg__opt[aria-pressed='true'],
+  :root .draw__toolbar .w-btn[aria-pressed='true'],
+  :root .board-menu__item[aria-current='true'] {
+    forced-color-adjust: none;
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  :root .swatch[aria-pressed='true'],
+  :root .w-color[aria-pressed='true'],
+  :root .widget-style__accent[aria-pressed='true'],
+  :root .widget-style__look[aria-pressed='true'],
+  :root .draw__palette .w-btn[aria-pressed='true'] {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  :root .icon-button:disabled,
+  :root .w-btn:disabled {
+    color: GrayText;
+    border-color: GrayText;
   }
 }

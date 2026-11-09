@@ -82,6 +82,29 @@ export function mountShell({ root, store, i18n, localeNames }) {
   });
   render();
 
+  /**
+   * 포커스 가림 방지 (WCAG 2.4.11, M6): 위쪽 알림이 포커스된 요소를 완전히 덮으면 알림을 독 위로 내린다.
+   * 알림이 없어지면 원래 자리로.
+   */
+  function avoidFocus() {
+    const focused = document.activeElement;
+    if (el.notices.childElementCount === 0) {
+      el.notices.classList.remove('notices--low');
+      return;
+    }
+    if (!(focused instanceof HTMLElement) || el.notices.contains(focused) || focused === document.body) return;
+    el.notices.classList.remove('notices--low');
+    const n = el.notices.getBoundingClientRect();
+    const f = focused.getBoundingClientRect();
+    // 제목 막대(위쪽 44px)만 봐도 되는 위젯은 그 부분 기준 — 이동·삭제 버튼이 가려지지 않게
+    const top = f.top;
+    const bottom = focused.classList.contains('widget') ? Math.min(f.bottom, f.top + 44) : f.bottom;
+    const covered = f.left >= n.left && f.right <= n.right && top >= n.top && bottom <= n.bottom;
+    el.notices.classList.toggle('notices--low', covered);
+  }
+  document.addEventListener('focusin', avoidFocus);
+  new MutationObserver(avoidFocus).observe(el.notices, { childList: true });
+
   return {
     /**
      * 닫을 수 있는 알림을 띄운다. 같은 키의 알림은 새 내용으로 교체한다.

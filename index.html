@@ -22,20 +22,9 @@
   </head>
   <body>
     <div class="app" id="app">
-      <h1 class="sr-only" data-i18n="app.name">ClassBoardKit</h1>
-      <main class="canvas" id="canvas" tabindex="-1" data-i18n-aria-label="board.canvasLabel">
-        <div class="canvas__empty" id="canvas-empty">
-          <svg class="icon icon--xl" aria-hidden="true"><use href="assets/icons.svg#board"></use></svg>
-          <p class="canvas__empty-title" data-i18n="board.empty.title"></p>
-          <p class="canvas__empty-body" data-i18n="board.empty.body"></p>
-          <button type="button" class="canvas__empty-action" id="empty-template">
-            <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#template"></use></svg>
-            <span data-i18n="template.emptyLink"></span>
-          </button>
-        </div>
-      </main>
-
-      <div class="toolbar toolbar--start">
+      <button type="button" class="skip-link" id="skip-to-dock" data-i18n="a11y.skipToDock"></button>
+      <section class="toolbar toolbar--start" data-i18n-aria-label="toolbar.board">
+        <h1 class="sr-only" data-i18n="app.name">ClassBoardKit</h1>
         <details class="popover" id="board-menu">
           <summary class="chip chip--button" data-i18n-title="board.menu">
             <span class="chip__text" id="board-name"></span>
@@ -69,6 +58,8 @@
             <p class="popover__heading" data-i18n="board.background"></p>
             <div class="swatches" id="background-swatches"></div>
             <input type="file" id="background-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+            <p class="popover__heading" data-i18n="widgetStyle.heading"></p>
+            <div class="widget-style" id="widget-style"></div>
             <p class="popover__heading" data-i18n="board.backupHeading"></p>
             <div class="board-menu__actions board-menu__actions--transfer" id="board-transfer">
               <button type="button" class="menu-button" data-action="export">
@@ -98,9 +89,9 @@
         <button type="button" class="icon-button" id="redo-button" disabled>
           <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#redo"></use></svg>
         </button>
-      </div>
+      </section>
 
-      <div class="toolbar toolbar--end">
+      <section class="toolbar toolbar--end" data-i18n-aria-label="toolbar.display">
         <button type="button" class="icon-button" id="keep-awake-toggle" aria-pressed="false" hidden>
           <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#sun"></use></svg>
         </button>
@@ -120,9 +111,24 @@
               <span class="field__label" data-i18n="settings.theme"></span>
               <select class="field__control" id="setting-theme"></select>
             </label>
+            <button type="button" class="menu-button" id="shortcuts-open">
+              <span data-i18n="shortcuts.open"></span>
+            </button>
           </div>
         </details>
-      </div>
+      </section>
+
+      <main class="canvas" id="canvas" tabindex="-1" data-i18n-aria-label="board.canvasLabel">
+        <div class="canvas__empty" id="canvas-empty">
+          <svg class="icon icon--xl" aria-hidden="true"><use href="assets/icons.svg#board"></use></svg>
+          <p class="canvas__empty-title" data-i18n="board.empty.title"></p>
+          <p class="canvas__empty-body" data-i18n="board.empty.body"></p>
+          <button type="button" class="canvas__empty-action" id="empty-template">
+            <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#template"></use></svg>
+            <span data-i18n="template.emptyLink"></span>
+          </button>
+        </div>
+      </main>
 
       <nav class="dock" id="dock" data-i18n-aria-label="dock.label"></nav>
 

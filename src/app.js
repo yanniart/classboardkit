@@ -15,6 +15,8 @@ import { mountCanvas } from './ui/canvas.js';
 import { mountDock } from './ui/dock.js';
 import { createActions } from './ui/actions.js';
 import { mountUndoControls } from './ui/undo-controls.js';
+import { createAnnouncer } from './ui/announce.js';
+import { mountShortcuts } from './ui/shortcuts.js';
 import { installPopoverBehavior } from './ui/popover.js';
 import { getAssetStore, releaseAssetUrl } from './ui/idb-assets.js';
 import { referencedAssetIds } from './core/assets.js';
@@ -99,9 +101,11 @@ function boot() {
   mountBoardMenu({ root, store, i18n, notify: shell.notify, actions, registry });
   mountUndoControls({ root, store, i18n, actions });
   mountDisplayControls({ root, store, i18n, notify: shell.notify });
-  const board = mountCanvas({ canvas, emptyState, store, registry, i18n, actions });
+  const announcer = createAnnouncer(root);
+  const board = mountCanvas({ canvas, emptyState, store, registry, i18n, actions, announce: announcer.say });
   mountDock({ dock, store, registry, i18n, actions, onAdded: (id) => board.focusWidget(id) });
   installPopoverBehavior(root);
+  mountShortcuts({ root, i18n });
 
   if (!persistent) shell.notify('storage.unavailable');
   for (const issue of issues) shell.notify(ISSUE_MESSAGES[issue.type]);
