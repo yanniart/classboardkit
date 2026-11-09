@@ -5,7 +5,7 @@
 
 ## [Unreleased]
 
-## [0.4.0] - 미출시
+## [0.4.0] - 2026-11-09
 
 접근성·디자인. 릴리스 노트: [docs/releases/v0.4.0.md](docs/releases/v0.4.0.md)
 

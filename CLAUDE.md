@@ -17,18 +17,19 @@
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
 
 ## 현재 상태 (2026-11-09)
-- **v0.3.0 출시** (M0~M5, 태그 `v0.1.0`~`v0.3.0`, https://yanniart.github.io/classboardkit/)
-- **M6 구현 완료 — `m6` 브랜치, 커밋 전** (접근성 점검·개선 NFR-005 · 활동 상징 F-115 · 위젯 모양 → v0.4.0)
-  - 기준선: 단위 **226개**, E2E m1 **34** · m2 **36** · m3 **43**(환경에 따라 44) · m4 **72** · m5 **68** · m6 **58** (40개 화면 상태 axe 위반 0)
-  - 첫 로드 gzip 145.1KB, Lighthouse 로컬 데스크톱 100 · 모바일 89 (python 서버 편차, 배포 URL에서 재확인)
-  - 기록: `docs/devlog/2026/2026-11-09-m6.md`(진단 기준선 표), ADR-0010, 릴리스 노트 `docs/releases/v0.4.0.md`(배포 날짜 비어 있음), CHANGELOG `[0.4.0] - 미출시`
-  - 로컬 `main`에 M6 계획서 커밋 `291154c`이 **푸시 안 된 상태** (m6은 그 위에서 분기) — 병합·푸시 때 함께 올라감
-- 사용자 작업 대기: GitHub Release 페이지(v0.2.0~v0.4.0), Labels·Milestones
+- **v0.4.0 출시** (M0~M6 완료, 태그 `v0.1.0`~`v0.4.0`, https://yanniart.github.io/classboardkit/)
+  - 위젯 15종(활동 상징 포함), 템플릿 6종, 실행 취소, 공유 링크(#share=), 위젯 모양, 보드 관리·배경(내 이미지), 이미지 포함 백업, 전체 화면·화면 켜두기, PWA 오프라인, ko/en, 테마 4종, 접근성(키보드·낭독기·강제 색상)
+  - 기준선: 단위 **226개**, E2E m1 **34** · m2 **36** · m3 **43**(환경에 따라 44) · m4 **72** · m5 **68** · m6 **58** (로컬·배포 URL 모두 통과, m6 = 40개 상태 axe 위반 0), Lighthouse(배포) 100/100/100, 첫 로드 gzip 145.1KB
+  - 릴리스 노트 `docs/releases/v0.1.0.md`~`v0.4.0.md`, 개발 로그 `docs/devlog/2026/`
+- 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등(m1~m6), `tools/e2e/pwa-remote.mjs`. 여러 개를 연달아 돌릴 때는 로그를 파일로 남길 것 (M6에서 결과 없이 끝난 실행 1회, 원인 미확인)
+- 사용자 작업 대기: GitHub Release 페이지(v0.2.0~v0.4.0, 본문 = `docs/releases/*.md`), Labels·Milestones
 - 미완료: 실기기 QA(qa-checklist 8~11절 — iPad·Safari·Firefox, QR 스캔, 메신저 공유, NVDA·VoiceOver·Windows 고대비), 서비스명 상표 확인
+- 로컬 `m4`~`m6` 브랜치는 `main`에 병합 완료 (남아 있어도 무방)
 
-## ▶ 다음 작업: M6 출시 (사용자 요청 시에만)
-- "커밋해줘" → `m6`에 커밋 / "병합하고 배포해줘" → `main` fast-forward 병합·푸시 → Actions 확인 → 배포 URL E2E(`E2E_URL=... m1~m6`, pwa-remote)·Lighthouse / "문서 반영하고 태그 달아줘" → 릴리스 노트·CHANGELOG 날짜, ROADMAP·PRD·M6 계획서·devlog "출시" 절·README 상태 갱신 → `v0.4.0` 태그
-- 그다음 M7(생태계: 추가 언어·기여 가이드·v1.0.0) 계획서 작성
+## ▶ 다음 작업: M7 (생태계 → v1.0.0)
+- ROADMAP의 M7 항목(추가 언어·번역 기여 가이드, 위젯 기여 가이드·위젯 템플릿, 스키마·위젯 인터페이스 안정화 선언)을 바탕으로 `docs/roadmap/M7-plan.md` 작성 (M5·M6 계획서 형식, 결정 사항은 권장안) → 사용자 확인 후 착수
+- 이월 검토: 위젯별 강조색 (M6 D6에서 보드 단위로 한정)
+- 커밋·병합·푸시(배포)·태그는 **사용자가 요청할 때만**
 
 ## 환경 (Windows)
 - **시스템에 Node.js 없음.** 포터블 Node를 `.tools/node/node.exe`(git 제외)에 둠
