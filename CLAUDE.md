@@ -17,17 +17,19 @@
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
 
 ## 현재 상태 (2026-11-09)
-- **v0.2.0 출시** (M0~M4, 태그 `v0.1.0`·`v0.2.0`, https://yanniart.github.io/classboardkit/)
-- **M5 구현 완료 — `m5` 브랜치, 커밋 전** (실행 취소 F-014 · 템플릿 6종 F-013 · 공유 링크 F-012 → v0.3.0)
-  - 기준선: 단위 **205개**, E2E m1 **34** · m2 **36** · m3 **43**(전체 화면 검사가 환경에 따라 1개 적게 나올 수 있음, M4 기록은 44) · m4 **72** · m5 **68**
-  - 첫 로드 gzip 130.7KB, Lighthouse 로컬 데스크톱 100 · 모바일 88~92 (python 서버 편차, 배포 URL에서 재확인 필요)
-  - 기록: `docs/devlog/2026/2026-11-09-m5.md`, ADR-0008(공유)·ADR-0009(실행 취소), 릴리스 노트 `docs/releases/v0.3.0.md`(배포 날짜 비어 있음), CHANGELOG `[0.3.0] - 미출시`
-- 사용자 작업 대기: GitHub Release 페이지(v0.2.0·v0.3.0), Labels·Milestones
-- 미완료: 실기기 QA(qa-checklist 8·9·10절), 서비스명 상표 확인
+- **v0.3.0 출시** (M0~M5 완료, 태그 `v0.1.0`·`v0.2.0`·`v0.3.0`, https://yanniart.github.io/classboardkit/)
+  - 위젯 14종, 템플릿 6종, 실행 취소, 공유 링크(#share=), 보드 관리·배경(내 이미지), 이미지 포함 백업, 전체 화면·화면 켜두기, PWA 오프라인, ko/en, 테마 4종
+  - 기준선: 단위 **205개**, E2E m1 **34** · m2 **36** · m3 **43**(전체 화면 검사가 환경에 따라 1개 적을 수 있음, M4 기록 44) · m4 **72** · m5 **68** (로컬·배포 URL 모두 통과), Lighthouse(배포) 100/100/100, 첫 로드 gzip 130.7KB
+  - 릴리스 노트 `docs/releases/v0.1.0.md`~`v0.3.0.md`, 개발 로그 `docs/devlog/2026/`
+- 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등(m1~m5), `tools/e2e/pwa-remote.mjs`
+- 사용자 작업 대기: GitHub Release 페이지(v0.2.0·v0.3.0, 본문 = `docs/releases/*.md`), Labels·Milestones
+- 미완료: 실기기 QA(qa-checklist 8·9·10절 — iPad·Safari·Firefox, QR 스캔, 메신저 공유), 서비스명 상표 확인
+- 로컬 `m4`·`m5` 브랜치는 `main`에 병합 완료 (남아 있어도 무방)
 
-## ▶ 다음 작업: M5 출시 (사용자 요청 시에만)
-- "커밋해줘" → `m5`에 커밋 / "병합하고 배포해줘" → `main` fast-forward 병합·푸시 → Actions 확인 → 배포 URL E2E(`E2E_URL=... m1~m5`, pwa-remote)·Lighthouse / "문서 반영하고 태그 달아줘" → 릴리스 노트 날짜·CHANGELOG 날짜·ROADMAP·devlog "출시" 절·README 상태 갱신 → `v0.3.0` 태그
-- 그다음 M6(접근성·디자인) 계획서 작성
+## ▶ 다음 작업: M6 (접근성·디자인 → v0.4.0)
+- ROADMAP의 M6 항목을 바탕으로 `docs/roadmap/M6-plan.md` 작성 (M4·M5 계획서 형식, 결정 사항은 권장안) → 사용자 확인 후 착수
+- 이월 과제: 시스템 테마 전환 시 그리기 'ink' 즉시 반영, 이미지 배경 위 빈 보드 문구 대비 (devlog M4·M5 "미완료")
+- 커밋·병합·푸시(배포)·태그는 **사용자가 요청할 때만**
 
 ## 환경 (Windows)
 - **시스템에 Node.js 없음.** 포터블 Node를 `.tools/node/node.exe`(git 제외)에 둠

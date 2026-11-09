@@ -5,7 +5,7 @@
 
 ## [Unreleased]
 
-## [0.3.0] - 미출시
+## [0.3.0] - 2026-11-09
 
 공유·템플릿·실행 취소. 릴리스 노트: [docs/releases/v0.3.0.md](docs/releases/v0.3.0.md)
 
