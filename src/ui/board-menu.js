@@ -1,13 +1,6 @@
-import {
-  addBoard,
-  deleteBoard,
-  duplicateBoard,
-  getActiveBoard,
-  importBoards,
-  renameBoard,
-  setActiveBoard,
-  setBackground,
-} from '../core/board-ops.js';
+import { duplicateBoard, getActiveBoard, setActiveBoard } from '../core/board-ops.js';
+import { createBoard } from '../core/schema.js';
+import { addBoardsOp, deleteBoardOp, renameBoardOp, setBackgroundOp } from '../core/undoable.js';
 import { BACKGROUND_PRESETS, resolveBackground } from '../core/backgrounds.js';
 import {
   MAX_IMPORT_SIZE,
@@ -24,6 +17,7 @@ import { requestPersistentStorage } from './updates.js';
 import { ImagePrepareError, getAssetStore, getAssetUrl, storeImageFile } from './idb-assets.js';
 import { referencedAssetIds } from '../core/assets.js';
 import { h, icon } from './dom.js';
+import { isShareSupported } from './share-codec.js';
 
 /** 가져오기 오류 코드 → 알림 메시지 키 */
 const IMPORT_ERRORS = {
@@ -51,9 +45,11 @@ const BACKGROUND_ERRORS = {
  *   store: ReturnType<typeof import('../core/store.js').createStore>,
  *   i18n: ReturnType<typeof import('../core/i18n.js').createI18n>,
  *   notify: ReturnType<typeof import('./shell.js').mountShell>['notify'],
+ *   actions: ReturnType<typeof import('./actions.js').createActions>,
+ *   registry: ReturnType<typeof import('../core/registry.js').createRegistry>,
  * }} deps
  */
-export function mountBoardMenu({ root, store, i18n, notify }) {
+export function mountBoardMenu({ root, store, i18n, notify, actions: history, registry }) {
   const el = {
     details: /** @type {HTMLDetailsElement} */ (root.querySelector('#board-menu')),
     name: /** @type {HTMLElement} */ (root.querySelector('#board-name')),
@@ -64,6 +60,7 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
     backupStatus: /** @type {HTMLElement} */ (root.querySelector('#board-backup-status')),
     file: /** @type {HTMLInputElement} */ (root.querySelector('#import-file')),
     bgFile: /** @type {HTMLInputElement} */ (root.querySelector('#background-file')),
+    emptyTemplate: /** @type {HTMLButtonElement} */ (root.querySelector('#empty-template')),
   };
   const { t } = i18n;
   const close = () => (el.details.open = false);
@@ -83,7 +80,14 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
   const actions = {
     async new() {
       close();
-      store.update((s) => addBoard(s, nextBoardName()));
+      history.perform((s) => addBoardsOp(s, [createBoard(nextBoardName())]));
+    },
+    async template() {
+      close();
+      // 템플릿 데이터·대화상자는 쓸 때만 불러온다 (첫 화면 영향 0)
+      const { chooseTemplate } = await import('./template-dialog.js');
+      const board = await chooseTemplate({ registry, i18n });
+      if (board) history.perform((s) => addBoardsOp(s, [board]));
     },
     async rename() {
       const board = getActiveBoard(store.getState());
@@ -95,13 +99,18 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
         confirmLabel: t('dialog.save'),
         ...buttons(),
       });
-      if (typeof name === 'string') store.update((s) => renameBoard(s, board.id, name));
+      if (typeof name === 'string') history.perform((s) => renameBoardOp(s, board.id, name));
     },
     async duplicate() {
       const board = getActiveBoard(store.getState());
       if (!board) return;
       close();
-      store.update((s) => duplicateBoard(s, board.id, t('board.copyName', { name: board.name })));
+      history.perform((s) => {
+        const index = s.boards.findIndex((/** @type {any} */ b) => b.id === board.id);
+        if (index === -1) return null;
+        const copy = duplicateBoard(s, board.id, t('board.copyName', { name: board.name })).boards[index + 1];
+        return addBoardsOp(s, [copy], { index: index + 1 });
+      });
     },
     async delete() {
       const board = getActiveBoard(store.getState());
@@ -114,7 +123,11 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
         danger: true,
         ...buttons(),
       });
-      if (ok) store.update((s) => deleteBoard(s, board.id, t('board.defaultName')));
+      if (ok) {
+        history.perform((s) => deleteBoardOp(s, board.id, t('board.defaultName')), {
+          undoNotice: 'history.removedBoard',
+        });
+      }
     },
   };
 
@@ -214,7 +227,7 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
       notify('transfer.error.read');
       return;
     }
-    store.update((s) => importBoards(s, result.boards));
+    history.perform((s) => addBoardsOp(s, result.boards));
     notify('transfer.imported', { type: 'info', params: { n: result.boards.length } });
   }
 
@@ -232,6 +245,13 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
     async import() {
       close();
       el.file.click();
+    },
+    async share() {
+      const board = getActiveBoard(store.getState());
+      if (!board) return;
+      close();
+      const { openShareDialog } = await import('./share-dialog.js');
+      await openShareDialog({ board, i18n, onExport: () => void download([board], board.name) });
     },
   };
 
@@ -254,7 +274,13 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
     });
   }
   delegate(el.actions, actions);
+  el.emptyTemplate.addEventListener('click', () => void actions.template());
   delegate(el.transfer, transferActions);
+  // 내장 압축을 못 쓰는 브라우저는 공유 링크 메뉴를 숨김 (ADR-0008)
+  /** @type {HTMLElement | null} */ (el.transfer.querySelector('[data-action="share"]'))?.toggleAttribute(
+    'hidden',
+    !isShareSupported(),
+  );
 
   function renderBackupStatus() {
     const days = daysSince(store.getState().settings.lastExportAt);
@@ -304,7 +330,7 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
         if (preset.css) swatch.style.background = preset.css;
         swatch.addEventListener('click', () => {
           const id = getActiveBoard(store.getState())?.id;
-          if (id) store.update((s) => setBackground(s, id, { type: preset.type, value: preset.value }));
+          if (id) history.perform((s) => setBackgroundOp(s, id, { type: preset.type, value: preset.value }));
         });
         return swatch;
       }),
@@ -343,7 +369,7 @@ export function mountBoardMenu({ root, store, i18n, notify }) {
     if (!file || !boardId) return;
     try {
       const id = await storeImageFile(file);
-      store.update((s) => setBackground(s, boardId, { type: 'image', value: id }));
+      history.perform((s) => setBackgroundOp(s, boardId, { type: 'image', value: id }));
     } catch (error) {
       console.info('[background] could not use image', error);
       const code = error instanceof ImagePrepareError ? error.code : 'decode';

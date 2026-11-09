@@ -13,9 +13,12 @@ import { mountDisplayControls } from './ui/display-controls.js';
 import { isStandalone, registerServiceWorker, requestPersistentStorage } from './ui/updates.js';
 import { mountCanvas } from './ui/canvas.js';
 import { mountDock } from './ui/dock.js';
+import { createActions } from './ui/actions.js';
+import { mountUndoControls } from './ui/undo-controls.js';
 import { installPopoverBehavior } from './ui/popover.js';
 import { getAssetStore, releaseAssetUrl } from './ui/idb-assets.js';
 import { referencedAssetIds } from './core/assets.js';
+import { readShareHash } from './core/share.js';
 
 /** 앱 시작 후 이미지 정리까지 기다리는 시간 (첫 화면과 경쟁하지 않게) */
 const ASSET_GC_DELAY_MS = 3000;
@@ -92,10 +95,12 @@ function boot() {
 
   // 셸이 먼저 구독해야 언어 변경이 다른 모듈보다 먼저 반영된다
   const shell = mountShell({ root, store, i18n, localeNames });
-  mountBoardMenu({ root, store, i18n, notify: shell.notify });
+  const actions = createActions({ store, i18n, notify: shell.notify });
+  mountBoardMenu({ root, store, i18n, notify: shell.notify, actions, registry });
+  mountUndoControls({ root, store, i18n, actions });
   mountDisplayControls({ root, store, i18n, notify: shell.notify });
-  const board = mountCanvas({ canvas, emptyState, store, registry, i18n });
-  mountDock({ dock, store, registry, i18n, onAdded: (id) => board.focusWidget(id) });
+  const board = mountCanvas({ canvas, emptyState, store, registry, i18n, actions });
+  mountDock({ dock, store, registry, i18n, actions, onAdded: (id) => board.focusWidget(id) });
   installPopoverBehavior(root);
 
   if (!persistent) shell.notify('storage.unavailable');
@@ -121,6 +126,20 @@ function boot() {
     if (document.visibilityState === 'hidden') autoSave.flush();
   });
   window.addEventListener('pagehide', () => autoSave.flush());
+
+  // 공유 링크(#share=…) 열기 — 시작 시 + 이미 열린 앱에 링크를 붙여 넣어 이동했을 때 (ADR-0008)
+  const handleShareHash = () => {
+    const encoded = readShareHash(location.hash);
+    if (encoded === null) return;
+    import('./ui/share-open.js')
+      .then(({ openSharedLink }) => openSharedLink({ encoded, i18n, notify: shell.notify, actions }))
+      .catch((error) => {
+        console.info('[share] could not open link', error);
+        shell.notify('share.error.invalid');
+      });
+  };
+  window.addEventListener('hashchange', handleShareHash);
+  handleShareHash();
 
   // 오프라인 지원: 앱이 정상 시작된 뒤에 등록 (첫 화면 로딩과 경쟁하지 않게)
   registerServiceWorker({ notify: shell.notify });

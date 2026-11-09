@@ -1,11 +1,10 @@
 import {
   bringToFront,
   getActiveBoard,
-  removeWidget,
   replaceWidget,
-  setWidgetRect,
   setWidgetState,
 } from '../core/board-ops.js';
+import { removeWidgetOp, setRectOp } from '../core/undoable.js';
 import { moveRect, resizeRect } from '../core/geometry.js';
 import { prepareWidget } from '../core/registry.js';
 import { resolveBackground } from '../core/backgrounds.js';
@@ -44,9 +43,10 @@ function applyRect(frame, r) {
  *   store: ReturnType<typeof import('../core/store.js').createStore>,
  *   registry: ReturnType<typeof import('../core/registry.js').createRegistry>,
  *   i18n: ReturnType<typeof import('../core/i18n.js').createI18n>,
+ *   actions: ReturnType<typeof import('./actions.js').createActions>,
  * }} deps
  */
-export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
+export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions }) {
   /** @type {Map<string, Entry>} */
   const entries = new Map();
   /** @type {string | null} */
@@ -63,6 +63,17 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
     const id = boardId();
     if (id) store.update((s) => fn(s, id));
   }
+
+  /** 실행 취소 기록이 남는 작업 (ADR-0009) */
+  /** @param {(state: any, boardId: string) => any} op @param {{ undoNotice?: string }} [options] */
+  function act(op, options) {
+    const id = boardId();
+    if (id) actions.perform((s) => op(s, id), options);
+  }
+
+  /** @param {string} widgetId */
+  const removeWithUndo = (widgetId) =>
+    act((s, id) => removeWidgetOp(s, id, widgetId), { undoNotice: 'history.removedWidget' });
 
   /** 표시 중인 배경 이미지 (보드 ID + 이미지 ID, 같으면 다시 불러오지 않음) */
   /** @type {string | null} */
@@ -161,7 +172,7 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
       bar.insertBefore(settingsButton, removeButton);
     }
 
-    removeButton.addEventListener('click', () => commit((s, id) => removeWidget(s, id, widget.id)));
+    removeButton.addEventListener('click', () => removeWithUndo(widget.id));
 
     // 어디를 눌러도 맨 앞으로
     frame.addEventListener('pointerdown', () => commit((s, id) => bringToFront(s, id, widget.id)), {
@@ -217,7 +228,7 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
         applyRect(entry.frame, start);
         return;
       }
-      commit((s, id) => setWidgetRect(s, id, entry.widget.id, rect));
+      act((s, id) => setRectOp(s, id, entry.widget.id, rect, { kind }));
     };
 
     target.addEventListener('pointermove', onMove);
@@ -236,7 +247,7 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
 
     if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault();
-      commit((s, b) => removeWidget(s, b, id));
+      removeWithUndo(id);
       return;
     }
 
@@ -248,7 +259,8 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n }) {
     const { x, y, w, h: height } = entry.widget;
     const start = { x, y, w, h: height };
     const rect = event.altKey ? resizeRect(start, dx, dy, entry.minSize) : moveRect(start, dx, dy);
-    commit((s, b) => setWidgetRect(s, b, id, rect));
+    // 연속 키 입력은 실행 취소 한 번에 되돌아가도록 합친다
+    act((s, b) => setRectOp(s, b, id, rect, { kind: event.altKey ? 'resize' : 'move', merge: true }));
   }
 
   /** @param {Entry} entry */

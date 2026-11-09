@@ -1,4 +1,5 @@
-import { addWidget, getActiveBoard } from '../core/board-ops.js';
+import { getActiveBoard } from '../core/board-ops.js';
+import { addWidgetOp } from '../core/undoable.js';
 import { h, icon } from './dom.js';
 
 /**
@@ -9,26 +10,21 @@ import { h, icon } from './dom.js';
  *   store: ReturnType<typeof import('../core/store.js').createStore>,
  *   registry: ReturnType<typeof import('../core/registry.js').createRegistry>,
  *   i18n: ReturnType<typeof import('../core/i18n.js').createI18n>,
+ *   actions: ReturnType<typeof import('./actions.js').createActions>,
  *   onAdded: (widgetId: string) => void,
  * }} deps
  */
-export function mountDock({ dock, store, registry, i18n, onAdded }) {
+export function mountDock({ dock, store, registry, i18n, actions, onAdded }) {
   const items = h('div', { className: 'dock__items' });
   const toggle = h('button', { className: 'dock__toggle', attrs: { type: 'button' } }, [icon('chevron-down')]);
   dock.replaceChildren(items, toggle);
 
   /** @param {import('../core/registry.js').WidgetDefinition} def */
   function add(def) {
-    /** @type {string | null} */
-    let widgetId = null;
-    store.update((s) => {
-      const board = getActiveBoard(s);
-      if (!board) return s;
-      const result = addWidget(s, board.id, def);
-      widgetId = result.widgetId;
-      return result.state;
-    });
-    if (widgetId) onAdded(widgetId);
+    const boardId = getActiveBoard(store.getState())?.id;
+    if (!boardId) return;
+    const result = actions.perform((s) => addWidgetOp(s, boardId, def));
+    if (result) onAdded(result.widgetId);
   }
 
   toggle.addEventListener('click', () =>

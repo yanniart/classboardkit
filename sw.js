@@ -3,8 +3,8 @@
 // - 새 버전은 대기 상태로 두고, 페이지가 "새로고침" 알림에서 SKIP_WAITING을 보내면 교체한다.
 // - PRECACHE·BUILD는 tools/sw-stamp.mjs가 생성한다 (직접 고치지 말 것, 테스트가 검증).
 
-const VERSION = '0.2.0';
-const BUILD = '8e817f22';
+const VERSION = '0.3.0';
+const BUILD = '13dfd716';
 const CACHE = `cbk-v${VERSION}-${BUILD}`;
 const CACHE_PREFIX = 'cbk-';
 
@@ -25,12 +25,16 @@ const PRECACHE = [
   'src/core/backgrounds.js',
   'src/core/board-ops.js',
   'src/core/geometry.js',
+  'src/core/history.js',
   'src/core/i18n.js',
   'src/core/persistence.js',
   'src/core/registry.js',
   'src/core/schema.js',
+  'src/core/share.js',
   'src/core/store.js',
+  'src/core/templates.js',
   'src/core/transfer.js',
+  'src/core/undoable.js',
   'src/core/utils/debounce.js',
   'src/core/utils/id.js',
   'src/core/utils/memory-storage.js',
@@ -44,6 +48,8 @@ const PRECACHE = [
   'src/styles/base.css',
   'src/styles/tokens.css',
   'src/styles/widgets.css',
+  'src/templates/index.js',
+  'src/ui/actions.js',
   'src/ui/board-menu.js',
   'src/ui/canvas.js',
   'src/ui/dialog.js',
@@ -53,7 +59,12 @@ const PRECACHE = [
   'src/ui/i18n-dom.js',
   'src/ui/idb-assets.js',
   'src/ui/popover.js',
+  'src/ui/share-codec.js',
+  'src/ui/share-dialog.js',
+  'src/ui/share-open.js',
   'src/ui/shell.js',
+  'src/ui/template-dialog.js',
+  'src/ui/undo-controls.js',
   'src/ui/updates.js',
   'src/vendor/qrcodegen.js',
   'src/widgets/clock/clock-logic.js',

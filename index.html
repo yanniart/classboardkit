@@ -28,6 +28,10 @@
           <svg class="icon icon--xl" aria-hidden="true"><use href="assets/icons.svg#board"></use></svg>
           <p class="canvas__empty-title" data-i18n="board.empty.title"></p>
           <p class="canvas__empty-body" data-i18n="board.empty.body"></p>
+          <button type="button" class="canvas__empty-action" id="empty-template">
+            <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#template"></use></svg>
+            <span data-i18n="template.emptyLink"></span>
+          </button>
         </div>
       </main>
 
@@ -44,6 +48,10 @@
               <button type="button" class="menu-button" data-action="new">
                 <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#plus"></use></svg>
                 <span data-i18n="board.new"></span>
+              </button>
+              <button type="button" class="menu-button" data-action="template">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#template"></use></svg>
+                <span data-i18n="template.menu"></span>
               </button>
               <button type="button" class="menu-button" data-action="rename">
                 <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#pencil"></use></svg>
@@ -71,6 +79,10 @@
                 <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg>
                 <span data-i18n="board.exportAll"></span>
               </button>
+              <button type="button" class="menu-button" data-action="share">
+                <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#share"></use></svg>
+                <span data-i18n="share.menu"></span>
+              </button>
               <button type="button" class="menu-button" data-action="import">
                 <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#upload"></use></svg>
                 <span data-i18n="board.import"></span>
@@ -80,6 +92,12 @@
             <input type="file" id="import-file" accept=".json,application/json" hidden />
           </div>
         </details>
+        <button type="button" class="icon-button" id="undo-button" disabled>
+          <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#undo"></use></svg>
+        </button>
+        <button type="button" class="icon-button" id="redo-button" disabled>
+          <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#redo"></use></svg>
+        </button>
       </div>
 
       <div class="toolbar toolbar--end">

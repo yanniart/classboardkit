@@ -93,9 +93,11 @@ export function mountShell({ root, store, i18n, localeNames }) {
      *   type?: 'error' | 'info',
      *   params?: Record<string, string | number>,
      *   action?: { labelKey: string, onClick: () => void },
-     * }} [options]
+     *   timeout?: number,
+     * }} [options] timeout: 자동으로 닫을 시간 (ms). 정보 알림에 액션이 있어도 지정하면 닫힘
+     * @returns {() => void} 이 알림을 닫는 함수
      */
-    notify(messageKey, { type = 'error', params, action } = {}) {
+    notify(messageKey, { type = 'error', params, action, timeout } = {}) {
       el.notices.querySelector(`[data-key="${CSS.escape(messageKey)}"]`)?.remove();
       const close = iconButton({ iconName: 'close', label: i18n.t('common.close'), className: 'notice__close' });
       close.dataset.i18nAriaLabel = 'common.close';
@@ -119,7 +121,9 @@ export function mountShell({ root, store, i18n, localeNames }) {
         action?.onClick();
       });
       el.notices.append(notice);
-      if (type === 'info' && !action) setTimeout(() => notice.remove(), INFO_TIMEOUT);
+      const delay = timeout ?? (type === 'info' && !action ? INFO_TIMEOUT : null);
+      if (delay !== null) setTimeout(() => notice.remove(), delay);
+      return () => notice.remove();
     },
   };
 }

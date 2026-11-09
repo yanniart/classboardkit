@@ -301,3 +301,69 @@ export function setWidgetState(state, boardId, widgetId, next, now = new Date())
 export function replaceWidget(state, boardId, widget, now = new Date()) {
   return mapWidget(state, boardId, widget.id, () => widget, now);
 }
+
+// ── 실행 취소용 역연산 (ADR-0009) ──
+
+/**
+ * 삭제된 위젯을 원래 순서 위치에 그대로(z·위치·state 포함) 되돌린다.
+ * 보드가 없거나 같은 ID 위젯이 이미 있으면 변경 없음.
+ * @param {AppState} state
+ * @param {string} boardId
+ * @param {any} widget
+ * @param {number} index 원래 배열 위치 (범위를 넘으면 끝)
+ * @param {Date} [now]
+ */
+export function restoreWidget(state, boardId, widget, index, now = new Date()) {
+  return mapBoard(
+    state,
+    boardId,
+    (b) => {
+      if (b.widgets.some((w) => w.id === widget.id)) return b;
+      const widgets = [...b.widgets];
+      widgets.splice(Math.max(0, Math.min(index, widgets.length)), 0, widget);
+      return { ...b, widgets };
+    },
+    now,
+  );
+}
+
+/**
+ * 보드를 원래 위치에 되돌리고 활성화한다. 같은 ID 보드가 이미 있으면 변경 없음.
+ * @param {AppState} state
+ * @param {any} board
+ * @param {number} index
+ */
+export function restoreBoard(state, board, index) {
+  if (state.boards.some((b) => b.id === board.id)) return state;
+  const boards = [...state.boards];
+  boards.splice(Math.max(0, Math.min(index, boards.length)), 0, board);
+  return withSettings({ ...state, boards }, { activeBoardId: board.id });
+}
+
+/**
+ * 보드 여러 개를 지운다 (추가 취소용). 모두 지워져 보드가 0개가 되면 변경 없음.
+ * 활성 보드가 지워지면 preferActiveId(없으면 첫 보드)를 활성화한다.
+ * @param {AppState} state
+ * @param {string[]} boardIds
+ * @param {string | null} [preferActiveId]
+ */
+export function removeBoards(state, boardIds, preferActiveId = null) {
+  const ids = new Set(boardIds);
+  const boards = state.boards.filter((b) => !ids.has(b.id));
+  if (boards.length === state.boards.length || boards.length === 0) return state;
+  let { activeBoardId } = state.settings;
+  if (!boards.some((b) => b.id === activeBoardId)) {
+    activeBoardId = boards.some((b) => b.id === preferActiveId) ? preferActiveId : boards[0].id;
+  }
+  return withSettings({ ...state, boards }, { activeBoardId });
+}
+
+/**
+ * 만들어진 보드(템플릿·공유 링크·복제 등)를 지정 위치(기본: 끝)에 넣고 활성화한다.
+ * @param {AppState} state
+ * @param {any} board
+ * @param {number} [index]
+ */
+export function insertBoard(state, board, index = state.boards.length) {
+  return restoreBoard(state, board, index);
+}

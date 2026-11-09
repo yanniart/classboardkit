@@ -88,3 +88,50 @@ export function openDialog({ title, message, input, confirmLabel, cancelLabel, d
     }
   });
 }
+
+/**
+ * 내용을 직접 채우는 모달 대화상자 (템플릿 고르기·공유 링크 등).
+ * build가 만든 내용 아래에 닫기 버튼을 둔다. done(value)로 닫으면 그 값, 그냥 닫으면 null.
+ *
+ * @template T
+ * @param {{
+ *   title: string,
+ *   closeLabel: string,
+ *   className?: string,
+ *   build: (body: HTMLElement, done: (value: T) => void) => void,
+ * }} options
+ * @returns {Promise<T | null>}
+ */
+export function openContentDialog({ title, closeLabel, className = '', build }) {
+  return new Promise((resolve) => {
+    const titleId = `dialog-title-${Math.random().toString(36).slice(2, 8)}`;
+    const body = h('div', { className: 'dialog__body' });
+    const closeButton = h('button', { className: 'button', text: closeLabel, attrs: { type: 'button' } });
+    const dialog = /** @type {HTMLDialogElement} */ (
+      h('dialog', { className: `dialog dialog--wide ${className}`.trim(), attrs: { 'aria-labelledby': titleId } }, [
+        h('h2', { className: 'dialog__title', text: title, attrs: { id: titleId } }),
+        body,
+        h('div', { className: 'dialog__actions' }, [closeButton]),
+      ])
+    );
+
+    /** @type {T | null} */
+    let result = null;
+    closeButton.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+      dialog.remove();
+      resolve(result);
+    });
+
+    build(body, (value) => {
+      result = value;
+      dialog.close();
+    });
+    document.body.append(dialog);
+    dialog.showModal();
+    /** @type {HTMLElement | null} */ (body.querySelector('button, input, a[href]'))?.focus();
+  });
+}

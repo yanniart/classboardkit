@@ -63,7 +63,7 @@ await sleep(1200);
 await openMenu();
 check('backup status: never (stale style)', await evaluate(`(() => { const el = document.querySelector('#board-backup-status');
   return el.textContent === '아직 백업한 적 없음' && el.classList.contains('board-menu__backup--stale'); })()`));
-check('transfer buttons labelled', (await evaluate(`[...document.querySelectorAll('#board-transfer .menu-button')].map(b => b.textContent.trim()).join('|')`)) === '보드 내보내기|전체 내보내기|가져오기');
+check('transfer buttons labelled', (await evaluate(`[...document.querySelectorAll('#board-transfer .menu-button')].map(b => b.textContent.trim()).join('|')`)) === '보드 내보내기|전체 내보내기|공유 링크|가져오기');
 await shot('m3-board-menu-ko');
 
 // 2. 현재 보드 내보내기
@@ -177,7 +177,7 @@ if (hasWakeLock) {
 await evaluate(`(() => { const s = document.getElementById('setting-locale'); s.value = 'en'; s.dispatchEvent(new Event('change')); })()`);
 await sleep(200);
 await openMenu();
-check('English transfer labels', (await evaluate(`[...document.querySelectorAll('#board-transfer .menu-button')].map(b => b.textContent.trim()).join('|')`)) === 'Export board|Export all|Import');
+check('English transfer labels', (await evaluate(`[...document.querySelectorAll('#board-transfer .menu-button')].map(b => b.textContent.trim()).join('|')`)) === 'Export board|Export all|Share link|Import');
 await shot('m3-board-menu-en');
 await click('#board-menu > summary');
 await evaluate(`(() => { const s = document.getElementById('setting-locale'); s.value = 'ko'; s.dispatchEvent(new Event('change')); })()`);

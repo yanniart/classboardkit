@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.3 | 2026-11-05 | @owner |
+| draft | 0.4 | 2026-11-09 | @owner |
 
 관련 문서: [PRD](../prd/PRD.md) · [데이터 스키마](data-schema.md) · [ADR 목록](adr/)
 
@@ -35,10 +35,20 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
        │   ├─ backgrounds.js  배경 프리셋, 밝기(tone) 판정
        │   ├─ transfer.js     내보내기 파일 생성(이미지 base64 포함), 가져오기 파싱·검증·새 ID 발급·이미지 해시 확인, 파일명
        │   ├─ assets.js       이미지 저장소 규칙: 내용 해시 ID, 참조 수집, GC, 축소 크기 (백엔드 주입)
+       │   ├─ history.js      실행 취소 기록: record/undo/redo, 상한 50, 합치기(mergeKey), 없어진 대상 건너뜀 (M5, ADR-0009)
+       │   ├─ undoable.js     실행 취소할 수 있는 작업 = board-ops 적용 + 역연산 항목 (M5)
+       │   ├─ templates.js    템플릿 → 새 보드 (레지스트리로 위젯 기본 state, M5)
+       │   ├─ share.js        공유 링크: 페이로드(이미지·명단 제외), 인코딩/디코딩(압축 주입), 길이 판정 (M5, ADR-0008)
        │   ├─ i18n.js         메시지 조회, 언어 감지
        │   └─ utils/          id, debounce, memory-storage, sound(Web Audio)
        ├─ ui/
-       │   ├─ shell.js        언어·테마 설정, 알림(error/info, 매개변수, 액션 버튼)
+       │   ├─ shell.js        언어·테마 설정, 알림(error/info, 매개변수, 액션 버튼, 자동 닫힘 시간)
+       │   ├─ actions.js      "적용 + 기록" 단일 헬퍼 perform(op), 실행 취소/다시 실행, 삭제 알림의 실행 취소 버튼 (M5)
+       │   ├─ undo-controls.js 툴바 실행 취소·다시 실행 버튼, 단축키 (M5)
+       │   ├─ template-dialog.js 템플릿 고르기 대화상자 (메뉴를 열 때 동적 import, M5)
+       │   ├─ share-dialog.js 공유 링크 대화상자: 복사·공유·QR·길이 초과 안내 (동적 import, M5)
+       │   ├─ share-open.js   #share= 링크 열기: 디코딩·검증·확인 후 추가 (동적 import, M5)
+       │   ├─ share-codec.js  CompressionStream/DecompressionStream('deflate-raw'), 1MB 상한 스트림 해제 (M5)
        │   ├─ i18n-dom.js     정적 문구 번역 (main.js·shell.js 공용)
        │   ├─ idb-assets.js   IndexedDB 백엔드, 이미지 준비(축소·WebP), object URL 캐시
        │   ├─ canvas.js       위젯 프레임 렌더, 드래그·리사이즈·키보드 (Pointer Events)
@@ -46,7 +56,7 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
        │   ├─ board-menu.js   보드 목록·관리, 배경 선택(내 이미지 포함), 내보내기/가져오기, 마지막 백업 표시
        │   ├─ display-controls.js  전체 화면·화면 켜두기 (기능 감지, 미지원 시 숨김)
        │   ├─ updates.js      서비스 워커 등록, 새 버전 알림, 저장소 영구 보관 요청
-       │   ├─ dialog.js       <dialog> 확인·입력 대화상자
+       │   ├─ dialog.js       <dialog> 확인·입력 대화상자, 내용 대화상자(openContentDialog)
        │   ├─ popover.js      <details> 팝오버 공통 동작
        │   └─ dom.js          DOM·아이콘 헬퍼
        └─ widgets/
@@ -55,6 +65,7 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
            ├─ timer/ stopwatch/ clock/ randomizer/ groups/ scoreboard/ traffic/ text/
            ├─ countdown/ dice/ draw/ image/ noise/ qr/   (M4)
            │                  각 index.js + *.css (+ *-logic.js: 순수 상태 전이)
+       templates/index.js     보드 템플릿 6종 데이터 (M5, i18n 키·비율 좌표)
        vendor/qrcodegen.js    QR 인코더 (Nayuki v1.4.0, 원본 그대로, QR 위젯이 지연 로드 — ADR-0006)
        styles/widgets.css     위젯 공통 스타일(.w-*), 팀 색 팔레트
 ```
@@ -118,6 +129,28 @@ export default {
 - **QR**: 라이브러리를 첫 사용 때 `<script>`로 로드, SVG(가로 연속 모듈 합친 path, 여백 4모듈, 흰 바탕 고정)
 - **주사위**: `randomInt(6)`, 굴리는 연출은 `prefers-reduced-motion`이면 생략. 결과는 누르는 즉시 저장
 
+### 2.2.3 실행 취소·템플릿·공유 (M5)
+- **실행 취소 모델** (ADR-0009): 작업마다 `{ label, boardId, undo, redo, mergeKey? }`를 세션 메모리에 기록(최대 50). 역연산은 ID로 대상을 찾고, 없으면 no-op → 건너뜀. 위젯 state는 건드리지 않으므로 "이동 → 입력 → 실행 취소" 때 입력은 유지
+- **기록 지점** (모두 `actions.perform` 경유):
+
+| 위치 | 작업 | 항목 |
+|---|---|---|
+| 독 | 위젯 추가 | `addWidgetOp` |
+| 캔버스 | 삭제 버튼·Delete 키 | `removeWidgetOp` + "위젯을 삭제했어요 — 실행 취소" 알림(6초) |
+| 캔버스 | 드래그 끝(이동·크기) | `setRectOp` (값이 같으면 기록 안 함) |
+| 캔버스 | 화살표·Alt+화살표 | `setRectOp` merge — 같은 위젯 1초 이내 연속 입력은 한 항목 |
+| 보드 메뉴 | 새 보드·복제·템플릿·파일 가져오기 | `addBoardsOp` (취소 시 이전 활성 보드로) |
+| 보드 메뉴 | 이름 변경·배경(프리셋·내 이미지) | `renameBoardOp`·`setBackgroundOp` |
+| 보드 메뉴 | 보드 삭제 | `deleteBoardOp` + "보드를 삭제했어요 — 실행 취소" 알림. 마지막 보드 삭제로 생긴 빈 보드는 취소 시 비어 있으면 함께 정리 |
+| 공유 링크 열기 | 보드 추가 | `addBoardsOp` |
+
+- 기록하지 않음: 위젯 내부 상태, 맨 앞으로(z), 보드 전환, 언어·테마·독 접기, 위젯 버전 마이그레이션
+- **단축키**: Ctrl/⌘+Z 실행 취소, Ctrl+Shift+Z·Ctrl+Y·⌘⇧Z 다시 실행. 물리 키(`code`) 기준이라 한글 자판에서도 동작. `input/textarea/select/contenteditable`·위젯 설정 패널·열린 대화상자 안에서는 앱이 가로채지 않음
+- 실행 취소 대상이 다른 보드면 그 보드로 전환 후 적용, "실행 취소: 위젯 이동" 알림(3초). 새로고침하면 기록은 사라짐 (언어 변경은 유지 — devlog 결정)
+- **템플릿**: `src/templates/index.js` 데이터 → `createBoardFromTemplate`(현재 언어로 문구, 위젯 기본 state에 덮어쓰기, 새 ID). 배치는 위 10%(툴바)·아래 12%(독)를 비우고 겹치지 않게 — 단위 테스트로 강제
+- **공유 링크** (ADR-0008): 형식 `#share=1.<base64url(deflate-raw(JSON))>`, JSON = 내보내기 형식. 링크 32,000자 초과 → 파일 내보내기 안내, 2,000자 이하 → QR(오류 정정 L). `CompressionStream('deflate-raw')` 미지원이면 메뉴 숨김
+- 템플릿·공유 대화상자 모듈은 메뉴를 열 때 동적 import → 첫 로드에 포함되지 않음 (precache에는 포함되어 오프라인 동작)
+
 ### 2.3 좌표계
 - 위젯 위치·크기는 **캔버스 대비 비율(0~1)** 로 저장 → 노트북·태블릿 간 화면 비율이 달라도 동일 배치 ([ADR-0004](adr/ADR-0004-relative-coordinates.md))
 - 위젯 내부 글자 크기는 CSS Container Queries(`cqmin`)로 위젯 크기에 비례
@@ -144,6 +177,10 @@ export default {
 | IndexedDB (M4) | 이미지·사용자 배경 | 이미지 기능만 비활성 + 안내 |
 | `createImageBitmap` + canvas `toBlob` (M4) | 이미지 축소·WebP 재인코딩, 평균 밝기 | WebP 미지원 시 JPEG |
 | `crypto.subtle.digest` (M4) | 이미지 ID(내용 해시), 가져오기 무결성 확인 | — (보안 컨텍스트) |
+| `CompressionStream`/`DecompressionStream` 'deflate-raw' (M5) | 공유 링크 압축·해제 | 공유 링크 메뉴 숨김, 받은 링크는 "이 브라우저에서는 열 수 없어요" 안내 |
+| Clipboard API `writeText` (M5) | 공유 링크 복사 | 링크 입력란을 선택하고 Ctrl+C 안내 |
+| Web Share API (M5) | 태블릿에서 "공유…" | 버튼 숨김 |
+| `history.replaceState`·`hashchange` (M5) | 공유 링크 처리 후 `#share` 제거, 열린 앱에서 링크 이동 감지 | — |
 
 ### 4.1 타이머 정확도
 - `setInterval` 누적 방식 금지. **종료 목표 시각(`endAt = Date.now() + remaining`)** 을 저장하고 `requestAnimationFrame`/주기 갱신 시 차이로 계산 → 백그라운드 탭 스로틀링·새로고침에도 정확
@@ -170,6 +207,7 @@ export default {
 - 외부 요청 없음 (NFR-007)
 - 이미지: SVG 업로드 금지(스크립트 포함 가능), 표시는 `blob:` URL(CSP `img-src blob:`)
 - **소음 측정기 개인정보**: 소리는 기기 안에서 레벨 숫자로만 바뀌며 녹음·저장·전송하지 않는다. 위젯 state에도 설정값만 저장. 측정 중이 아니면 마이크를 잡지 않음(위젯 삭제·보드 전환·언어 변경·탭 숨김 시 트랙 중지 — E2E로 확인)
+- **공유 링크** (ADR-0008): 내용은 URL 조각(#)에만 → HTTP 요청·서버 로그·리퍼러에 포함되지 않음. 이미지는 항상 제외, 명단(랜덤 뽑기·모둠 편성) 제외가 기본. 여는 쪽 처리 순서: `#share` 제거(replaceState) → 기능 감지 → 길이(32,000자) → 버전 접두어(더 높으면 "새 버전" 안내) → base64url 문자 집합 → **스트림 압축 해제 1MB 상한**(압축 폭탄) → UTF-8(fatal) → `parseImport`(위와 같은 검증·새 ID) → **확인 대화상자** → 새 보드로 추가. 링크를 여는 것만으로 데이터가 바뀌지 않음
 - 서드파티 코드: `src/vendor/qrcodegen.js`(MIT, 해시 고정 — ADR-0006) 1개
 
 ## 8. 테스트 전략

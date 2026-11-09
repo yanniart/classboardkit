@@ -206,5 +206,11 @@ export async function launch({ lang = 'ko', args = [] } = {}) {
     process.exit(results.every((r) => r.ok) ? 0 : 1);
   };
 
-  return { cdp, evaluate, ready, rect, mouse, click, drag, touchDrag, key, type, shot, viewport, saved, settings, check, finish, errors };
+  /** 결과 출력 없이 브라우저만 종료 (보조 브라우저 — 예: 다른 프로필로 공유 링크 열기) */
+  const close = () => {
+    ws.close();
+    kill();
+  };
+
+  return { cdp, evaluate, ready, rect, mouse, click, drag, touchDrag, key, type, shot, viewport, saved, settings, check, finish, close, errors };
 }

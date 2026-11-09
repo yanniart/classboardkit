@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.3 | 2026-11-05 | @owner |
+| draft | 0.4 | 2026-11-09 | @owner |
 
 현재 스키마 버전: **1**
 
@@ -27,6 +27,18 @@
 - `assets` (M4, 선택 필드 → `schemaVersion` 1 유지): 키 = 이미지 ID, `type` ∈ png·jpeg·webp·gif, `width`·`height` 1~16384, `tone?`, `data` = base64
   - 가져오기: 형식 검사 → 가져오는 보드가 참조하는 것만 → **내용 해시 = ID 확인**(불일치 시 `invalid`, 전체 취소) → IndexedDB 저장 → 보드 반영
   - 참조되지 않은 항목은 무시. v0.1.0 앱은 `assets`를 모르므로 보드만 가져오고 이미지는 "찾을 수 없음"으로 표시됨
+
+### 1.1 공유 링크 (M5, ADR-0008) — 저장 스키마 변화 없음
+
+```
+<앱 주소>#share=1.<base64url( deflate-raw( JSON ) )>
+```
+
+- JSON = 위 내보내기 형식에 **보드 1개**, `settings`·`assets` 없음. `1.`은 공유 형식 버전 (더 높으면 "새 버전" 안내)
+- 만들 때 바꾸는 것: 이미지 위젯 `state.assetId` → `null`, 이미지 배경 → `{ type: 'gradient', value: 'default' }`, "명단 제외"(기본 켬)면 `randomizer`의 `items·picked·history`, `groups`의 `items·result` → `[]`
+- 제한: 링크 전체 32,000자(넘으면 파일 내보내기 안내), 압축 해제 결과 1MB, QR은 2,000자 이하일 때만
+- 받는 쪽은 `parseImport` 경로 그대로 (검증·마이그레이션·새 ID), 확인 후 새 보드로 추가
+- 실행 취소 기록(M5)은 저장하지 않는다 (세션 메모리)
 
 ## 2. Board
 
@@ -123,4 +135,5 @@ IndexedDB (M4): DB `classboardkit`, 저장소 `assets` (keyPath `id`) — `{ id,
 |---|---|---|
 | 1 | 2026-11-04 | 최초 정의 |
 | 1 | 2026-11-05 | Settings 선택 필드 `lastExportAt`·`keepAwake` 추가 (버전 유지), 내보내기 파일명·가져오기 규칙 명시 |
+| 1 | 2026-11-09 (M5) | 공유 링크 형식(§1.1) 추가 — 내보내기 형식 재사용, 저장 스키마·버전 변화 없음 |
 | 1 | 2026-11-05 (M4) | 위젯 6종 state(dice·countdown·draw·image·noise·qr), 배경 `image`, 내보내기 `assets` 선택 필드, 가져오기 한도 30MB, IndexedDB 저장소 (버전 유지) |
