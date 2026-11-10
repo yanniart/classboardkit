@@ -41,7 +41,7 @@ export async function openSharedLink({ encoded, i18n, notify, actions }) {
   const [board] = result.boards;
   const ok = await openDialog({
     title: t('share.open.title'),
-    message: t('share.open.message', { name: board.name, count: board.widgets.length }),
+    message: t('share.open.message', { name: board.name, n: board.widgets.length }),
     confirmLabel: t('share.open.confirm'),
     cancelLabel: t('dialog.cancel'),
   });

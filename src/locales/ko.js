@@ -26,7 +26,7 @@ export default {
     nameLabel: '보드 이름',
     renameTitle: '보드 이름 변경',
     deleteTitle: '이 보드를 삭제할까요?',
-    deleteMessage: '“{name}” 보드와 위젯 {count}개가 삭제됩니다. 삭제 직후에는 실행 취소할 수 있어요.',
+    deleteMessage: '“{name}” 보드와 위젯 {n}개가 삭제됩니다. 삭제 직후에는 실행 취소할 수 있어요.',
     empty: {
       title: '보드가 비어 있어요',
       body: '아래 독에서 위젯을 추가하세요.',
@@ -126,7 +126,7 @@ export default {
       empty: '명단을 입력하면 뽑을 수 있어요.',
       remaining: '{total}명 중 {n}명 남음',
       allPicked: '모두 뽑았어요',
-      total: '전체 {total}명',
+      total: '전체 {n}명',
       recent: '이전: {names}',
       excludePicked: '한 번 뽑힌 사람은 제외',
       clearHistory: '뽑기 기록 지우기',
@@ -137,8 +137,9 @@ export default {
       regroup: '다시 섞기',
       make: '모둠 만들기',
       empty: '명단을 입력하면 모둠을 만들 수 있어요.',
-      ready: '{n}명 → {groups}개 모둠',
-      summary: '{n}명 · {groups}개 모둠',
+      ready: '{names} → {groups}',
+      summary: '{names} · {groups}',
+      count: '{n}개 모둠',
       groupName: '{n}모둠',
       by: '나누는 기준',
       byCount: '모둠 수',
@@ -316,6 +317,7 @@ export default {
   settings: {
     open: '설정',
     language: '언어',
+    translationHelp: '번역 개선 제안하기',
     theme: '테마',
     themes: {
       system: '시스템',
@@ -459,7 +461,7 @@ export default {
     working: '링크를 만드는 중…',
     open: {
       title: '공유된 보드를 추가할까요?',
-      message: '공유된 보드 “{name}”(위젯 {count}개)을 새 보드로 추가할까요? 기존 보드는 바뀌지 않아요.',
+      message: '공유된 보드 “{name}”(위젯 {n}개)을 새 보드로 추가할까요? 기존 보드는 바뀌지 않아요.',
       confirm: '보드 추가',
     },
     added: '공유된 보드 “{name}”을 추가했어요.',

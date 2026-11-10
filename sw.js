@@ -3,8 +3,8 @@
 // - 새 버전은 대기 상태로 두고, 페이지가 "새로고침" 알림에서 SKIP_WAITING을 보내면 교체한다.
 // - PRECACHE·BUILD는 tools/sw-stamp.mjs가 생성한다 (직접 고치지 말 것, 테스트가 검증).
 
-const VERSION = '0.4.0';
-const BUILD = '01a1f23b';
+const VERSION = '0.5.0';
+const BUILD = '1b643a35';
 const CACHE = `cbk-v${VERSION}-${BUILD}`;
 const CACHE_PREFIX = 'cbk-';
 
@@ -43,7 +43,9 @@ const PRECACHE = [
   'src/core/utils/random.js',
   'src/core/utils/sound.js',
   'src/locales/en.js',
+  'src/locales/es.js',
   'src/locales/index.js',
+  'src/locales/ja.js',
   'src/locales/ko.js',
   'src/main.js',
   'src/styles/app.css',

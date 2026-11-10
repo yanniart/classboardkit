@@ -11,7 +11,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* 좁은 위젯·긴 번역: 버튼을 줄이지 않고 다음 줄로 (M7) */
+  flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.groups__toolbar > .w-btn {
+  flex: none;
 }
 
 .groups__summary {

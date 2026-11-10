@@ -11,7 +11,7 @@ ClassBoardKit은 노트북·태블릿 화면을 수업용 대시보드로 바꿔
 - **서버 없음**: GitHub Pages 정적 호스팅, 데이터 외부 전송 없음
 - **오프라인**: 한 번 열면 인터넷 없이도 동작, 홈 화면에 앱으로 설치 가능
 - **빌드 없음**: HTML · CSS · Vanilla JavaScript(ES Modules), 런타임 의존성은 원본 그대로 넣은 QR 인코더 1개뿐
-- **다국어**: 한국어 · 영어
+- **다국어**: 한국어 · English · Español · 日本語 (번역 개선 제안 환영)
 - **접근성**: 키보드만으로 모든 기능, 화면 낭독기 알림, 고대비·Windows 고대비 모드, WCAG 2.1 AA 기준 자동 점검
 
 ![위젯 8종을 배치한 보드 (한국어, 데스크톱)](docs/images/board-desktop-ko.png)

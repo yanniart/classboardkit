@@ -21,12 +21,18 @@ export default {
     backup: {
       never: 'Not backed up yet',
       today: 'Last backup: today',
-      daysAgo: 'Last backup: {n} day(s) ago',
+      daysAgo: {
+        one: 'Last backup: {n} day ago',
+        other: 'Last backup: {n} days ago',
+      },
     },
     nameLabel: 'Board name',
     renameTitle: 'Rename board',
     deleteTitle: 'Delete this board?',
-    deleteMessage: '“{name}” and its {count} widget(s) will be deleted. You can undo this right after.',
+    deleteMessage: {
+      one: '“{name}” and its {n} widget will be deleted. You can undo this right after.',
+      other: '“{name}” and its {n} widgets will be deleted. You can undo this right after.',
+    },
     empty: {
       title: 'Your board is empty',
       body: 'Add a widget from the dock below.',
@@ -71,7 +77,10 @@ export default {
     list: {
       label: 'Names (one per line)',
       placeholder: 'Alex\nSam\nJordan',
-      count: '{n} names',
+      count: {
+        one: '{n} name',
+        other: '{n} names',
+      },
       edit: 'Enter names',
     },
     remove: 'Remove {name}',
@@ -126,7 +135,10 @@ export default {
       empty: 'Add names to start picking.',
       remaining: '{n} of {total} left',
       allPicked: 'Everyone has been picked',
-      total: '{total} names',
+      total: {
+        one: '{n} name',
+        other: '{n} names',
+      },
       recent: 'Before: {names}',
       excludePicked: 'Don’t pick the same name twice',
       clearHistory: 'Clear pick history',
@@ -137,8 +149,12 @@ export default {
       regroup: 'Shuffle',
       make: 'Make groups',
       empty: 'Add names to make groups.',
-      ready: '{n} names → {groups} groups',
-      summary: '{n} names · {groups} groups',
+      ready: '{names} → {groups}',
+      summary: '{names} · {groups}',
+      count: {
+        one: '{n} group',
+        other: '{n} groups',
+      },
       groupName: 'Group {n}',
       by: 'Split by',
       byCount: 'Number of groups',
@@ -149,7 +165,10 @@ export default {
     scoreboard: {
       title: 'Scoreboard',
       teamN: 'Team {n}',
-      announce: '{team}: {n} points',
+      announce: {
+        one: '{team}: {n} point',
+        other: '{team}: {n} points',
+      },
       teamName: 'Team {n} name',
       teamCount: 'Teams',
       color: 'Team colour',
@@ -316,6 +335,7 @@ export default {
   settings: {
     open: 'Settings',
     language: 'Language',
+    translationHelp: 'Suggest a better translation',
     theme: 'Theme',
     themes: {
       system: 'System',
@@ -325,7 +345,10 @@ export default {
     },
   },
   transfer: {
-    imported: 'Imported {n} board(s).',
+    imported: {
+      one: 'Imported {n} board.',
+      other: 'Imported {n} boards.',
+    },
     exported: 'Saved “{file}”.',
     error: {
       tooLarge: 'This file is too large to import (max 30 MB, 200 boards).',
@@ -413,7 +436,10 @@ export default {
     title: 'Start from a template',
     intro: 'Pick a layout for a new board. You can change everything afterwards.',
     emptyLink: 'Start from a template',
-    widgets: '{n} widgets',
+    widgets: {
+      one: '{n} widget',
+      other: '{n} widgets',
+    },
     lessonStart: {
       name: 'Lesson start',
       desc: 'Clock, today’s goal, a 5-minute warm-up timer and a traffic light.',
@@ -461,7 +487,10 @@ export default {
     working: 'Creating link…',
     open: {
       title: 'Add a shared board?',
-      message: 'Add the shared board “{name}” ({count} widgets) as a new board? Your boards will not be changed.',
+      message: {
+        one: 'Add the shared board “{name}” ({n} widget) as a new board? Your boards will not be changed.',
+        other: 'Add the shared board “{name}” ({n} widgets) as a new board? Your boards will not be changed.',
+      },
       confirm: 'Add board',
     },
     added: 'Added the shared board “{name}”.',

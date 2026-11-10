@@ -59,3 +59,54 @@ test('all locale files define exactly the same keys as the fallback', () => {
 test('every locale has a display name', () => {
   for (const code of Object.keys(messages)) assert.ok(localeNames[code], code);
 });
+
+test('plural objects select by Intl.PluralRules using params.n', () => {
+  const plural = {
+    en: { days: { one: '{n} day ago', other: '{n} days ago' }, plain: 'Plain {n}' },
+    es: { days: { one: 'hace {n} día', other: 'hace {n} días' } },
+    ja: { days: '{n}日前' },
+  };
+  const i18n = createI18n({ messages: plural, locale: 'en', fallback: 'en' });
+  assert.equal(i18n.t('days', { n: 1 }), '1 day ago');
+  assert.equal(i18n.t('days', { n: 2 }), '2 days ago');
+  assert.equal(i18n.t('days', { n: 0 }), '0 days ago');
+  assert.equal(i18n.t('plain', { n: 1 }), 'Plain 1');
+  i18n.setLocale('es');
+  assert.equal(i18n.t('days', { n: 1 }), 'hace 1 día');
+  assert.equal(i18n.t('days', { n: 2 }), 'hace 2 días');
+  // es의 many(1,000,000) 범주가 없으면 other
+  assert.equal(i18n.t('days', { n: 1000000 }), 'hace 1000000 días');
+  i18n.setLocale('ja');
+  assert.equal(i18n.t('days', { n: 1 }), '1日前');
+  assert.equal(i18n.t('days', { n: 2 }), '2日前');
+});
+
+test('plural without a numeric n uses other; missing locale falls back with its own rules', () => {
+  const plural = {
+    en: { w: { one: '{n} widget', other: '{n} widgets' } },
+    ko: {},
+  };
+  const i18n = createI18n({ messages: plural, locale: 'ko', fallback: 'en' });
+  assert.equal(i18n.t('w'), '{n} widgets');
+  assert.equal(i18n.t('w', { n: '1,234' }), '1,234 widgets');
+  assert.equal(i18n.t('w', { n: 1 }), '1 widget');
+});
+
+test('flattenMessages keeps plural objects as one entry', () => {
+  const flat = flattenMessages({ a: { one: 'x', other: 'y' }, b: { low: 'l', other: 'o' } });
+  assert.deepEqual([...flat.keys()], ['a', 'b.low', 'b.other']);
+  assert.deepEqual(flat.get('a'), { one: 'x', other: 'y' });
+});
+
+test('detectLocale maps regional Spanish and Japanese, unsupported Portuguese falls back', () => {
+  const supported = ['en', 'es', 'ja', 'ko'];
+  assert.equal(detectLocale(['es-419'], supported, 'en'), 'es');
+  assert.equal(detectLocale(['es-ES'], supported, 'en'), 'es');
+  assert.equal(detectLocale(['ja-JP'], supported, 'en'), 'ja');
+  assert.equal(detectLocale(['pt-BR', 'pt'], supported, 'en'), 'en');
+});
+
+test('locale names are listed in code order and every shipped locale has one', () => {
+  assert.deepEqual(Object.keys(localeNames), Object.keys(messages));
+  assert.deepEqual(Object.keys(messages), ['en', 'es', 'ja', 'ko']);
+});

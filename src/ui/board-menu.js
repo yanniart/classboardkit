@@ -122,7 +122,7 @@ export function mountBoardMenu({ root, store, i18n, notify, actions: history, re
       close();
       const ok = await openDialog({
         title: t('board.deleteTitle'),
-        message: t('board.deleteMessage', { name: board.name, count: board.widgets.length }),
+        message: t('board.deleteMessage', { name: board.name, n: board.widgets.length }),
         confirmLabel: t('dialog.delete'),
         danger: true,
         ...buttons(),

@@ -18,3 +18,5 @@ jobs:
           node-version: 22
       - name: Unit tests
         run: node --test
+      - name: Translation check
+        run: node tools/i18n-check.mjs

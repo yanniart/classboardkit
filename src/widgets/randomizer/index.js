@@ -103,7 +103,7 @@ export default {
         ? available === 0
           ? t('widget.randomizer.allPicked')
           : t('widget.randomizer.remaining', { n: available, total: state.items.length })
-        : t('widget.randomizer.total', { total: state.items.length });
+        : t('widget.randomizer.total', { n: state.items.length });
       pickButton.disabled = available === 0;
       resetButton.hidden = !state.excludePicked || state.picked.length === 0;
       const prev = state.history.slice(1, 4).map((x) => x.value);

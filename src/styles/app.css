@@ -226,6 +226,16 @@
   background: var(--color-surface-muted);
 }
 
+/* 설정 팝오버의 보조 링크 (번역 개선 제안) — 터치 높이 확보 */
+.field__hint-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  text-underline-offset: 0.2em;
+}
+
 /* ── 보드 메뉴 ── */
 
 .board-menu {

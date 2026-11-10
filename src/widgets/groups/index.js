@@ -17,6 +17,9 @@ export default {
   mount(container, ctx) {
     const { t } = ctx;
     let state = ctx.state;
+    // 이름 수·모둠 수는 각각 복수형 문구 → ready/summary에 끼워 넣음 (M7 D2)
+    const namesText = (n) => t('widget.list.count', { n });
+    const groupsText = (n) => t('widget.groups.count', { n });
 
     // 모둠이 많으면 스크롤 → 키보드로도 스크롤할 수 있게 포커스 가능 (WCAG 2.1.1)
     const grid = h('div', {
@@ -54,7 +57,7 @@ export default {
 
       if (!hasResult) {
         emptyText.textContent = hasItems
-          ? t('widget.groups.ready', { n: state.items.length, groups: groupCount(state.items.length, state.by, state.n) })
+          ? t('widget.groups.ready', { names: namesText(state.items.length), groups: groupsText(groupCount(state.items.length, state.by, state.n)) })
           : t('widget.groups.empty');
         emptyAction.replaceChildren(h('span', { className: 'w-btn__text', text: t(hasItems ? 'widget.groups.make' : 'widget.list.edit') }));
         emptyAction.onclick = hasItems
@@ -66,7 +69,7 @@ export default {
         return;
       }
 
-      summary.textContent = t('widget.groups.summary', { n: state.items.length, groups: state.result.length });
+      summary.textContent = t('widget.groups.summary', { names: namesText(state.items.length), groups: groupsText(state.result.length) });
       if (announceNext) live.say(summary.textContent);
       announceNext = false;
       grid.style.setProperty('--group-count', String(state.result.length));

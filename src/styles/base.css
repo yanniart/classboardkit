@@ -10,6 +10,11 @@ body {
   height: 100%;
 }
 
+/* 일본어: 가나·약물을 비례 간격으로 (전각 그대로면 좁은 제목·버튼에서 듬성하고 넘침) — M7 */
+:root:lang(ja) body {
+  font-feature-settings: 'palt';
+}
+
 body {
   font-family: var(--font-sans);
   font-size: var(--text-md);

@@ -216,11 +216,15 @@ export default {
 - `setInterval` 누적 방식 금지. **종료 목표 시각(`endAt = Date.now() + remaining`)** 을 저장하고 `requestAnimationFrame`/주기 갱신 시 차이로 계산 → 백그라운드 탭 스로틀링·새로고침에도 정확
 
 ## 5. 다국어 (i18n)
-- `src/locales/ko.js`, `en.js` — **JS 모듈로 export** (fetch 불필요, 정적 import)
+- `src/locales/en.js`·`es.js`·`ja.js`·`ko.js` — **JS 모듈로 export** (fetch 불필요, 정적 import). 등록·언어 이름은 `locales/index.js` (코드 순)
 - 키 규칙: `영역.대상.속성` (예: `widget.timer.start`)
-- 감지: `localStorage` 설정 → `navigator.languages` → 기본 `en`
+- 감지: `localStorage` 설정 → `navigator.languages`(지역 코드는 기본 언어로: `es-419` → `es`) → 기본 `en`
 - 숫자·날짜는 `Intl.DateTimeFormat`, `Intl.NumberFormat` 사용
 - 누락 키는 `en`으로 폴백 + 개발 모드 콘솔 경고
+- **자리표시자** `{name}`: 개수는 항상 `{n}`. 여러 개수가 든 문장은 복수형 조각을 끼워 넣음 (`widget.groups.ready` = `{names} → {groups}`)
+- **복수형 (M7 D2)**: 값이 `{ one, other, ... }`(CLDR 범주, `other` 필수)면 `t(key, { n })`가 `Intl.PluralRules(값의 언어)`로 고름. 범주가 없거나 `n`이 숫자가 아니면 `other`. ja·ko는 문자열 하나(= `other`)
+- **번역 검사**: `tools/i18n-check.mjs` (CI) — 키 누락·여분, 빈 값, 자리표시자 불일치, 복수형 범주(정수 0~1000에서 쓰이는 범주 필수, 언어에 없는 범주 금지) = 오류 / 영어와 같은 값 = 경고(`--strict`면 오류). 순수 함수는 `tools/i18n-lint.mjs`
+- 글꼴: `:root:lang(ja)`에서 일본어 글꼴을 `system-ui`보다 앞에 + `font-feature-settings: 'palt'`
 
 ## 6. UI·스타일
 - 디자인 토큰: `src/styles/tokens.css` (색, 간격, 반경, 그림자, z-index)

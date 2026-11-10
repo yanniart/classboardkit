@@ -61,6 +61,8 @@ python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운�
 .tools/node/node.exe tools/e2e/m4.mjs                # M4 위젯 (가짜 마이크 인자 사용, 8766도 사용)
 .tools/node/node.exe tools/e2e/m5.mjs                # M5 실행 취소·템플릿·공유 (보조 브라우저 1개 더 띄움, 8767 사용)
 .tools/node/node.exe tools/e2e/m6.mjs                # M6 접근성(axe 40개 상태)·활동 상징·위젯 모양 (~3분)
+.tools/node/node.exe tools/e2e/m7.mjs                # M7 4개 언어 넘침·axe·템플릿·언어 감지 (~6분)
+.tools/node/node.exe tools/i18n-check.mjs            # 번역 검사 (키·자리표시자·복수형, CI에서도 실행)
 .tools/node/node.exe tools/e2e/a11y-audit.mjs        # 접근성 진단 표 (상태별 axe·이름 없는 요소) → tools/e2e/out/a11y-audit.json
 .tools/node/node.exe tools/first-load.mjs            # 첫 로드 gzip 합계 + 지연 로드 모듈이 섞였는지
 .tools/node/node.exe tools/sw-stamp.mjs              # ★ 앱 파일(index.html·manifest·src·assets) 변경 후 필수
@@ -79,7 +81,7 @@ python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운�
 - `src/widgets/<type>/` index.js(계약) + css + `*-logic.js`(순수). 등록: `src/widgets/index.js` 배열 1줄
 - `src/widgets/shared/` 설정 패널·입력 요소·명단 파서, `src/styles/widgets.css` 공통 위젯 스타일
 - 위젯 계약: TRD 2.2 (`setState`는 교체, `openSettings` 선택, 난수는 `core/utils/random.js`만)
-- 새 문구는 `src/locales/en.js`·`ko.js` 둘 다 (키 일치 테스트 있음)
+- 새 문구는 `src/locales/` **4개 언어 모두**(en·es·ja·ko) → `tools/i18n-check.mjs`. 개수는 `{n}`, 영어·스페인어는 복수형 `{ one, other }`, ja·ko는 문자열 (TRD 5절)
 - 문서: `docs/README.md` 인덱스, PRD·TRD·data-schema·ADR·ROADMAP·QA·devlog
 
 ## 반복해서 겪은 함정
@@ -102,3 +104,5 @@ python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운�
 - DOM `append(null)`은 "null" 글자를 넣음 (`h()` 헬퍼만 거름) → 조건부 요소는 걸러서 append (M5)
 - 템플릿·공유 대화상자는 동적 import — 첫 로드에 넣지 말 것 (`tools/first-load.mjs`로 gzip 합계·lazy 모듈 0 확인)
 - `src/vendor/qrcodegen.js`는 수정 금지 (해시 테스트). 갱신 절차는 ADR-0006
+- **E2E 언어 (M7)**: 헤드리스 Edge는 새로고침 뒤 `navigator.languages`가 `ko`로 바뀜 → 언어는 설정 UI로 바꿀 것. 설정 객체를 손으로 쓸 때 일부 필드만 넣으면 검증에서 거부돼 기본값이 됨
+- 일본어 글꼴은 `system-ui`보다 앞에 (Windows에서 Segoe UI가 잡히면 가나가 글자마다 대체 글꼴로 그려져 듬성해짐)
