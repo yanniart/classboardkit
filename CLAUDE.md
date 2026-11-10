@@ -16,22 +16,20 @@
 - 계획에 없는 선택은 권장안으로 정하고 진행 → devlog "결정 사항"에 기록 (사용자가 권장안 위임을 선호, 2026-11-05)
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
 
-## 현재 상태 (2026-11-10)
-- **v0.5.0 출시** (M0~M6 + M7 1부 완료, 태그 `v0.1.0`~`v0.5.0`, https://yanniart.github.io/classboardkit/)
+## 현재 상태 (2026-11-11)
+- **v1.0.0 출시** (M0~M7 완료, 태그 `v0.1.0`~`v1.0.0`, https://yanniart.github.io/classboardkit/)
   - 위젯 15종(활동 상징 포함), 템플릿 6종, 실행 취소, 공유 링크(#share=), 위젯 모양, 보드 관리·배경(내 이미지), 이미지 포함 백업, 전체 화면·화면 켜두기, PWA 오프라인, en·es·ja·ko(복수형), 테마 4종, 접근성(키보드·낭독기·강제 색상)
-  - 기준선: 단위 **236개**, E2E m1 **34** · m2 **36** · m3 **43**(환경에 따라 44) · m4 **72** · m5 **68** · m6 **58** · m7 **26** (로컬·배포 URL 모두 통과, m6 = 40개 상태 axe 위반 0, m7 = 4개 언어 넘침 0), Lighthouse(배포) 100/100/100, 첫 로드 gzip 158.2KB
-  - 릴리스 노트 `docs/releases/v0.1.0.md`~`v0.5.0.md`, 개발 로그 `docs/devlog/2026/`
+  - 기준선: 단위 **243개**, E2E m1 **34** · m2 **36** · m3 **43**(환경에 따라 44) · m4 **72** · m5 **68** · m6 **58** · m7 **33** (로컬·배포 URL 모두 통과, m6 = 40개 상태 axe 위반 0, m7 = 4개 언어 넘침 0), Lighthouse(배포) 100/100/100, 첫 로드 gzip 158.5KB
+  - 릴리스 노트 `docs/releases/v0.1.0.md`~`v1.0.0.md`, 개발 로그 `docs/devlog/2026/`
 - 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등(m1~m7), `tools/e2e/pwa-remote.mjs`. 여러 개를 연달아 돌릴 때는 로그를 파일로 남길 것 (M6에서 결과 없이 끝난 실행 1회, 원인 미확인)
-- GitHub: 라벨 `type:*`·`area:*` 9개, 마일스톤 M0~M7(M0~M6 닫힘, M7 열림, 기한 11-24) 생성 (2026-11-10). Release v0.1.0~v0.5.0 (본문 = `docs/releases/*.md`, `gh release create`는 `.claude/settings.local.json`에서 허용)
+- GitHub: 라벨 `type:*`·`area:*` 9개, 마일스톤 M0~M7(M0~M6 닫힘, M7 열림, 기한 11-24) 생성 (2026-11-10). Release v0.1.0~v1.0.0, 비공개 취약점 제보 켬 (본문 = `docs/releases/*.md`, `gh release create`는 `.claude/settings.local.json`에서 허용)
 - 미완료: 실기기 QA(qa-checklist 8~11절 — iPad·Safari·Firefox, QR 스캔, 메신저 공유, NVDA·VoiceOver·Windows 고대비), es·ja 원어민 검토(12절), 서비스명 상표 확인
-- 브랜치: `main` + **`m7`(유지 — v0.5.0 병합 후 3-5부터 이어서, v1.0.0 때 다시 병합, M7 D9)**
+- 브랜치: `main`만 (`m7`은 v1.0.0 병합 후 삭제). 배포 URL E2E에서 Pages가 가끔 모듈에 503을 돌려줌 → 실패하면 그 스크립트만 다시 실행
 
-## ▶ 다음 작업: M7 완료 → v1.0.0 출시 대기
-- 계획서: [docs/roadmap/M7-plan.md](docs/roadmap/M7-plan.md), devlog `2026-11-10-m7.md`(1부)·`2026-11-11-m7.md`(2부)
-- **3-0~3-7 완료** (`m7` 브랜치, 커밋 전). 버전 1.0.0, 릴리스 노트 `docs/releases/v1.0.0.md`("검증" 줄은 출시 때 채움)
-- **사용자가 출시를 요청하면** (M6·v0.5.0과 같은 흐름): 커밋 → `main` fast-forward 병합·푸시 → Actions 배포 확인(sw.js VERSION 1.0.0) → 배포 URL E2E m1~m7·pwa-remote(로그 파일) → Lighthouse → 출시 반영 문서 커밋·푸시 → `v1.0.0` 태그 → `gh release create` (Latest)
-- 사용자 승인 필요: 저장소 Settings → Private vulnerability reporting 켜기 (SECURITY.md 링크, 현재 꺼짐 — `gh api -X PUT repos/yanniart/classboardkit/private-vulnerability-reporting`)
-- v1 이후: ROADMAP "v1 이후" — patch/minor/major 규칙은 ADR-0011. **v1 계약(백업 형식·공유 링크·저장 키·위젯 계약·공개 모듈)을 깨는 변경 금지**
+## ▶ 다음 작업: v1.x 유지보수
+- 로드맵 "v1 이후" 참고. M8 같은 다음 마일스톤은 **아직 계획 없음** — 사용자가 정하면 `docs/roadmap/M8-plan.md`를 먼저 쓴다 (M3~M7 계획서 형식)
+- **v1 계약(ADR-0011)을 깨는 변경 금지**: 백업 형식·공유 링크 `1.`·저장 키·위젯 계약·공개 모듈. 버전: patch(버그·번역) / minor(새 위젯·언어·선택 필드) / major(계약 깸)
+- 남은 확인: 실기기 QA 8~11·13절, es·ja 원어민 검토(12절), 교사 실사용 인터뷰(PRD 성공 지표), 서비스명 상표
 - 이월 검토: 위젯별 강조색, 소리 재생 공개 모듈 승격
 - 커밋·병합·푸시(배포)·태그·Release는 **사용자가 요청할 때만** (한 메시지로 모두 요청하면 이어서 진행)
 
