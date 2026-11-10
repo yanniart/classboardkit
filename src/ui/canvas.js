@@ -163,6 +163,7 @@ export function mountCanvas({ canvas, emptyState, store, registry, i18n, actions
       entry.instance = /** @type {any} */ (def).mount(body, {
         state: prepared.widget.state,
         t: i18n.t,
+        locale: i18n.locale,
         setState: (next) => commit((s, id) => setWidgetState(s, id, widget.id, next)),
       });
     }

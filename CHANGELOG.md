@@ -5,6 +5,19 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-11
+
+안정화 선언. 릴리스 노트: [docs/releases/v1.0.0.md](docs/releases/v1.0.0.md)
+
+### Added
+- **v1 안정성 약속** ([ADR-0011](docs/trd/adr/ADR-0011-v1-public-contract.md)): 백업 파일 형식·공유 링크·저장 키·위젯 계약을 v1.x 동안 호환
+- 영어 README(`README.en.md`), 기여 안내 `CONTRIBUTING.md`(영·한), 새 위젯·번역 가이드(영·한), 보안 제보 안내 `SECURITY.md`
+- 개발: 새 위젯 생성기 `node tools/new-widget.mjs <type>` — 바로 동작하는 위젯·테스트·번역 자리를 만듦
+- 개발: 위젯에 현재 언어 전달(`ctx.locale`), 위젯이 쓸 수 있는 공개 모듈 범위와 그 검사
+
+### Changed
+- 이슈·PR 양식을 영어·한국어 병기로
+
 ## [0.5.0] - 2026-11-10
 
 언어. 릴리스 노트: [docs/releases/v0.5.0.md](docs/releases/v0.5.0.md)

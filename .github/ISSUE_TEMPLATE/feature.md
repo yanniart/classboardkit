@@ -1,6 +1,6 @@
 ---
-name: 기능 요청 / 작업
-about: PRD 기능(F-xxx) 구현 작업 또는 새 기능 제안
+name: Feature / 기능
+about: Propose a feature or widget (PRD F-xxx) / 기능·위젯 제안, PRD 작업
 labels: type:feature
 ---
 

@@ -2,7 +2,7 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.5 | 2026-11-09 | @owner |
+| v1 | 1.0 | 2026-11-11 | @owner |
 
 관련 문서: [PRD](../prd/PRD.md) · [데이터 스키마](data-schema.md) · [ADR 목록](adr/)
 
@@ -79,7 +79,9 @@ index.html, manifest.webmanifest, sw.js(서비스 워커, 루트 = 범위 전체
 - **순수 로직 분리**: DOM에 의존하지 않는 계산(`*-logic.js`, `core/utils`)을 분리해 Node에서 테스트
 - **위젯은 플러그인**: 코어는 개별 위젯을 알지 못함. 레지스트리를 통해서만 연결 ([ADR-0003](adr/ADR-0003-widget-plugin-interface.md))
 
-### 2.2 위젯 인터페이스 (계약)
+### 2.2 위젯 인터페이스 (계약) — **v1 공개 계약** ([ADR-0011](adr/ADR-0011-v1-public-contract.md))
+
+> v1.x 동안 이 절의 정의·컨텍스트·반환값과 아래 **공개 모듈**은 하위 호환을 지킨다. 깨는 변경은 major, 추가는 minor.
 
 ```js
 // widgets/<type>/index.js
@@ -94,7 +96,7 @@ export default {
   createState() { return { durationMs: 300000, mode: 'digital', status: 'idle', sound: true }; },
   migrate(state, fromVersion) { return state; }, // version > 1이면 필수
   mount(container, ctx) {
-    // ctx: { state, setState(next | (prev) => next), t(key, params) }
+    // ctx: { state, setState(next | (prev) => next), t(key, params), locale }  — locale: 'en' 등 UI 언어 (v1.0 추가)
     // 반환: { update(nextState), destroy(), openSettings?() }
   },
 };
@@ -102,6 +104,9 @@ export default {
 
 - `openSettings`를 반환하면 캔버스가 제목 막대에 설정(⚙) 버튼을 표시한다. 위젯은 `shared/ui.js`의 `createSettingsPanel`로 본문 위에 겹치는 패널을 연다 (Esc·완료로 닫힘)
 - 난수는 `core/utils/random.js`(crypto + 거부 샘플링, Fisher–Yates)만 사용한다 — `Math.random` 금지 (공정성)
+- 날짜·숫자 형식은 `ctx.locale`로 `Intl.*`에 넘긴다 (`document.documentElement.lang`을 직접 읽지 않음)
+- **공개 모듈** (위젯이 import해도 되는 것): `ui/dom.js`(`h`·`icon`·`iconButton`), `widgets/shared/ui.js`(`createSettingsPanel`·`button`·`field`·`segmented`·`toggle`·`textInput`·`listEditor`·`stepper`·`svg`·`prefersReducedMotion`·`liveRegion`), `widgets/shared/list.js`, `core/utils/random.js`, `core/registry.js`(타입). 그 밖은 내부 모듈 — 내장 위젯 예외 3건은 `tests/widget-imports.test.js`가 관리 (ADR-0011)
+- 계약 검사: `validateWidgetDefinition`(필드·크기·`migrate`·`styleUrl`은 .css) + 단위 테스트(제목이 모든 언어에 있음, `styleUrl`은 자기 폴더, import 범위)
 
 - `setState`는 **교체**다 (병합 아님). 필드 삭제(예: 타이머 일시정지 시 `endAt` 제거)를 표현하기 위함. 같은 참조를 반환하면 변경 없음
 - `update(nextState)`는 상태가 바뀔 때만 호출된다. 위젯은 입력 중인 값을 덮어쓰지 않도록 스스로 비교한다

@@ -11,7 +11,8 @@
 | 데이터 스키마 | `trd/data-schema.md` | 저장·내보내기 JSON 구조 | 스키마 변경 시 (버전 업) |
 | ADR | `trd/adr/ADR-xxxx-*.md` | 중요한 기술 결정 기록 | 결정 시 (불변, 대체만 가능) |
 | 로드맵 | `roadmap/ROADMAP.md` | 단계·마일스톤·순서 | 마일스톤 완료/변경 시 |
-| 마일스톤 계획 | `roadmap/Mn-plan.md` | 마일스톤 실행 순서·완료 기준 (M3 완료, M4 계획) | 착수 전 |
+| 마일스톤 계획 | `roadmap/Mn-plan.md` | 마일스톤 실행 순서·완료 기준 (M3~M7) | 착수 전 |
+| 기여 가이드 | `guides/new-widget(.ko).md`·`guides/translation(.ko).md`, `../CONTRIBUTING(.ko).md` | 외부 기여자용 (영어 원문 + 한국어, M7 D4) | 계약·도구 변경 시 |
 | 릴리스 노트 | `releases/vX.Y.Z.md` | 버전별 사용자 안내 (GitHub Release 본문) | 릴리스 시 |
 | QA 체크리스트 | `trd/qa-checklist.md` | 기기별 수동 점검 항목 | 마일스톤마다 |
 | 작업 안내 | `../CLAUDE.md` | 환경·명령·규칙·현재 상태 (세션 인계용) | 마일스톤마다 |
@@ -52,8 +53,9 @@ PRD F-101 ──▶ TRD 모듈 / ADR ──▶ GitHub Issue (#12, label prd:F-10
 
 ### 2.4 GitHub 연동
 - **Labels**: `type:feature` `type:bug` `type:docs` `type:chore` / `area:core` `area:widget` `area:ui` `area:i18n` / `prd:F-xxx`
-- **Milestones**: ROADMAP의 `M0`~`Mn`과 1:1
-- **Projects**: Backlog → Ready → In progress → Review → Done
+- **Milestones**: ROADMAP의 `M0`~`Mn`과 1:1 (제목 = "M7 생태계"처럼 번호 + 이름, 완료된 마일스톤은 닫음)
+- 라벨·마일스톤은 2026-11-10 `gh`로 생성. `prd:F-xxx` 라벨은 이슈를 만들 때 필요한 것만 추가
+- **Projects**: (보류 — 1인 개발, `project` 토큰 권한 필요) Backlog → Ready → In progress → Review → Done
 - 문서 변경 커밋은 `docs:` 접두어 (Conventional Commits)
 
 ### 2.5 정보 신뢰도 표기

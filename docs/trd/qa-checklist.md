@@ -212,3 +212,12 @@
 - [ ] 스페인어 화면을 태블릿 세로(768px)에서 — 독·대화상자 버튼 잘림 없음
 - [ ] 번역 제안 링크가 GitHub 이슈 양식(`translation.md`)을 엶
 
+## 13. 기여·v1 (M7 2부, v1.0.0)
+
+> 자동 검증: `tests/new-widget.test.js`(임시 폴더에 생성 → 등록·계약·번역 검사·생성 테스트 통과), `tests/widget-imports.test.js`(공개 모듈 범위), m7 2부(생성 위젯이 앱 독에 추가·조작·저장·삭제)
+
+- [ ] 깨끗한 클론에서 CONTRIBUTING 절차대로: 서버 실행 → `node --test` → `node tools/new-widget.mjs demo` → 앱 독에 "Demo" → 되돌리기(`git checkout . && git clean -fd`)
+- [ ] GitHub에서 이슈 양식 3종(Bug·Feature·Translation)이 영·한 병기로 보이고 라벨이 붙음
+- [ ] SECURITY.md의 비공개 제보 링크가 열림 (저장소 Settings → Code security → Private vulnerability reporting 켜짐)
+- [ ] v0.5.0에서 내보낸 백업 파일·공유 링크를 v1.0.0에서 가져오기·열기
+

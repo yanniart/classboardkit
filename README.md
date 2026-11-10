@@ -1,5 +1,7 @@
 # ClassBoardKit
 
+[English](README.en.md) · **한국어**
+
 > 설치·로그인 없이 브라우저에서 바로 쓰는 오프라인 우선 교실 위젯 보드
 
 **👉 바로 사용하기: https://yanniart.github.io/classboardkit/**
@@ -18,7 +20,9 @@ ClassBoardKit은 노트북·태블릿 화면을 수업용 대시보드로 바꿔
 
 ## 현재 상태
 
-✅ **v0.4.0 공개** (2026-11-09) — M0~M6 완료: 위젯 15종(활동 상징 포함), 템플릿 6종, 실행 취소, 공유 링크, 위젯 모양, 접근성 점검(키보드·낭독기·고대비), 오프라인 PWA
+✅ **v1.0.0** (2026-11-11) — 백업 파일 형식·공유 링크·저장 키·위젯 계약이 안정되었습니다 ([ADR-0011](docs/trd/adr/ADR-0011-v1-public-contract.md)). v1.0에서 만든 백업과 링크는 모든 v1.x에서 계속 동작합니다.
+
+위젯 15종(활동 상징 포함), 템플릿 6종, 실행 취소, 공유 링크, 위젯 모양, 4개 언어, 접근성 점검(키보드·낭독기·고대비), 오프라인 PWA
 
 ## 기능
 
@@ -87,9 +91,19 @@ ClassBoardKit은 노트북·태블릿 화면을 수업용 대시보드로 바꿔
 | [TRD](docs/trd/TRD.md) | 기술 요구사항 |
 | [데이터 스키마](docs/trd/data-schema.md) | 보드·위젯·내보내기 JSON 구조 |
 | [로드맵](docs/roadmap/ROADMAP.md) | 단계별 마일스톤 |
-| [릴리스 노트](docs/releases/) | [v0.4.0](docs/releases/v0.4.0.md) · [v0.3.0](docs/releases/v0.3.0.md) · [v0.2.0](docs/releases/v0.2.0.md) · [v0.1.0](docs/releases/v0.1.0.md) |
+| [릴리스 노트](docs/releases/) | [v1.0.0](docs/releases/v1.0.0.md) · [v0.5.0](docs/releases/v0.5.0.md) · [v0.4.0](docs/releases/v0.4.0.md) · [v0.3.0](docs/releases/v0.3.0.md) · [v0.2.0](docs/releases/v0.2.0.md) · [v0.1.0](docs/releases/v0.1.0.md) |
 | [개발 로그](docs/devlog/) | 날짜별 작업 기록 |
+| [기여 안내](CONTRIBUTING.ko.md) | 원칙·개발 환경·테스트·PR 체크리스트 ([English](CONTRIBUTING.md)) |
+| [새 위젯 가이드](docs/guides/new-widget.ko.md) · [번역 가이드](docs/guides/translation.ko.md) | 위젯 계약·생성기, 새 언어 추가 |
 | [벤치마킹](docs/research/benchmark-classroomscreen.md) | 참고 서비스 분석 |
+
+## 기여
+
+버그 신고·번역 개선·새 위젯 모두 환영합니다 — [CONTRIBUTING.ko.md](CONTRIBUTING.ko.md)
+
+- 새 위젯: `node tools/new-widget.mjs my-widget`이 바로 동작하는 위젯을 만들어 줍니다 → [가이드](docs/guides/new-widget.ko.md)
+- 새 언어·문구 개선 → [번역 가이드](docs/guides/translation.ko.md) (앱의 설정 → "번역 개선 제안"으로도)
+- 보안 문제는 비공개로 → [SECURITY.md](SECURITY.md)
 
 ## 로컬 실행
 
@@ -107,8 +121,9 @@ Node.js 20 이상이 필요합니다. 설치할 패키지는 없습니다.
 
 ```bash
 node --test                      # 단위 테스트
+node tools/i18n-check.mjs        # 번역 검사 (키·자리표시자·복수형)
 node tools/sw-stamp.mjs          # 앱 파일을 바꾼 뒤 (오프라인 캐시 목록·버전 갱신, 잊으면 테스트 실패)
-node tools/e2e/m1.mjs            # 브라우저 E2E (서버 실행 후, Edge/Chrome 필요) — m1~m6 (m6은 접근성 점검: 개발 전용 axe-core를 `.tools/axe/`에 받아 두면 함께 실행)
+node tools/e2e/m1.mjs            # 브라우저 E2E (서버 실행 후, Edge/Chrome 필요) — m1~m7 (m6은 접근성 점검: 개발 전용 axe-core를 `.tools/axe/`에 받아 두면 함께 실행)
 ```
 
 ## 라이선스

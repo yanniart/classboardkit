@@ -1,6 +1,14 @@
-// M7 E2E 1부 (언어): 4개 언어 × 점검 상태 전부에서 글자 넘침 0 · axe 심각 위반 0 · 템플릿 6종 생성
-//   · 첫 화면 언어(저장값/브라우저 감지) · 복수형 문구 · 일본어 글꼴 · 번역 제안 링크
+// M7 E2E
+//   1부 (언어): 4개 언어 × 점검 상태 전부에서 글자 넘침 0 · axe 심각 위반 0 · 템플릿 6종 생성
+//     · 첫 화면 언어(저장값/브라우저 감지) · 복수형 문구 · 일본어 글꼴 · 번역 제안 링크
+//   2부 (생태계): tools/new-widget.mjs로 만든 위젯이 실제 앱에서 동작 (임시 복사본 + 포트 8768 — 저장소는 그대로)
 // 실행: 정적 서버(8765) 실행 후 `node tools/e2e/m7.mjs` (~6분). M7_LOCALES=es,ja 로 일부만 가능
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { tmpdir } from 'node:os';
+import { dirname, extname, join, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createWidget } from '../new-widget.mjs';
 import { APP_URL, launch, sleep } from './harness.mjs';
 import { AXE_AVAILABLE, axe, severe, summarize } from './a11y.mjs';
 import { auditStates } from './a11y-states.mjs';
@@ -102,6 +110,18 @@ await sleep(300);
 const enOne = await pluralState(['Ana']);
 check('en plural: "1 name" (no "(s)")', enOne.includes('1 name') && !enOne.includes('1 names') && !enOne.includes('(s)'), enOne.slice(0, 60));
 
+// 언어 전환: 위젯을 다시 그리고(제목·시계 날짜가 새 언어), 실행 취소 기록은 유지 (M5 결정)
+await freshStart('en');
+await click('.dock__item[data-type="clock"]');
+await sleep(300);
+await setLocale('ja');
+await sleep(400);
+const switched = await evaluate(`({ title: document.querySelector('.widget[data-type="clock"] .widget__title').textContent, date: document.querySelector('.clock__date')?.textContent ?? '', undo: !document.getElementById('undo-button').disabled })`);
+check('language switch: widgets re-render in the new language (ctx.locale), undo history kept', switched.title === text('ja', 'widget.clock.title') && /[月日]/.test(switched.date) && switched.undo, JSON.stringify(switched));
+await click('#undo-button');
+await sleep(300);
+check('language switch: undo still removes the widget added before the switch', (await evaluate(`document.querySelectorAll('.widget[data-type="clock"]').length`)) === 0);
+
 // ═════════ 3. 언어별 점검 상태: 넘침 · axe · 스크린샷 ═════════
 for (const locale of LOCALES) {
   await freshStart(locale);
@@ -165,6 +185,58 @@ for (const [browserLang, want] of [['es-419', 'es'], ['ja', 'ja'], ['pt-BR', 'en
   const got = await other.evaluate(`({ lang: document.documentElement.lang, title: document.querySelector('.canvas__empty-title').textContent })`);
   check(`browser language ${browserLang} → ${want}`, got.lang === want && got.title === text(want, 'board.empty.title'), JSON.stringify(got));
   other.close();
+}
+
+// ═════════ 5. 위젯 생성기: 만든 위젯이 앱에서 동작 ═════════
+{
+  const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+  const tmp = mkdtempSync(join(tmpdir(), 'cbk-gen-app-'));
+  for (const p of ['index.html', 'manifest.webmanifest', 'sw.js', 'src', 'assets']) cpSync(join(ROOT, p), join(tmp, p), { recursive: true });
+  const { created } = createWidget({ root: tmp, type: 'e2e-counter', title: 'E2E counter', stamp: false, log: () => {} });
+  check('generator: creates widget files in a copy of the app', created.length === 4, created.join(', '));
+  const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
+  const server = createServer((req, res) => {
+    const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    const file = normalize(join(tmp, path.endsWith('/') ? `${path}index.html` : path));
+    if (!file.startsWith(tmp) || !existsSync(file) || statSync(file).isDirectory()) return res.writeHead(404).end();
+    res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' }).end(readFileSync(file));
+  });
+  await new Promise((r) => server.listen(8768, '127.0.0.1', r));
+  try {
+    await cdp('Page.navigate', { url: 'http://127.0.0.1:8768/' });
+    await ready();
+    const W = '.widget[data-type="e2e-counter"]';
+    const dockLast = await evaluate(`[...document.querySelectorAll('.dock__item')].at(-1)?.dataset.type`);
+    check('generator: new widget is the last dock item', dockLast === 'e2e-counter', dockLast);
+    await click('.dock__item[data-type="e2e-counter"]');
+    await sleep(300);
+    const value = () => evaluate(`document.querySelector('${W} .e2e-counter__value')?.textContent`);
+    const v0 = await value();
+    await click(`${W} .w-btn--primary`);
+    await sleep(200);
+    const v1 = await value();
+    await click(`${W} .widget__settings`);
+    await sleep(200);
+    const incLabel = text(await evaluate('document.documentElement.lang'), 'common.increase');
+    await click(`${W} .w-panel button[aria-label="${incLabel}"]`); // 단계 1 → 2
+    await sleep(150);
+    await evaluate(`document.querySelector('${W} .w-panel .w-panel__header button')?.click()`);
+    await sleep(150);
+    await click(`${W} .w-btn--primary`);
+    await sleep(200);
+    const v2 = await value();
+    const said = await evaluate(`document.querySelector('${W} [aria-live="polite"]')?.textContent ?? ''`);
+    check('generator: widget counts, settings change the step, result is announced', v0 === '0' && v1 === '1' && Number(v2) > 2 && /3|4/.test(said), `${v0} → ${v1} → ${v2}, said "${said}"`);
+    await sleep(700);
+    const savedState = await evaluate(`(() => { const bs = JSON.parse(localStorage.getItem('${BOARDS_KEY}')); return bs.flatMap(x => x.widgets).find(w => w.type === 'e2e-counter')?.state; })()`);
+    check('generator: state is saved as JSON', savedState?.count === Number(v2), JSON.stringify(savedState));
+    await click(`${W} .widget__remove`);
+    await sleep(300);
+    check('generator: widget can be removed', (await evaluate(`document.querySelectorAll('${W}').length`)) === 0);
+  } finally {
+    server.close();
+    rmSync(tmp, { recursive: true, force: true });
+  }
 }
 
 b.finish();

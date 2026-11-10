@@ -10,3 +10,6 @@ node_modules/
 
 # E2E 스크린샷
 tools/e2e/out/
+
+# Claude Code 개인 설정 (이 PC 전용)
+.claude/settings.local.json

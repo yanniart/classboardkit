@@ -38,7 +38,7 @@ export default {
 
   mount(container, ctx) {
     const { t } = ctx;
-    const locale = document.documentElement.lang || 'en';
+    const { locale } = ctx;
     let state = ctx.state;
     /** @type {ReturnType<typeof setTimeout> | null} */
     let timer = null;

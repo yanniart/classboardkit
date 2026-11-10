@@ -74,3 +74,18 @@ test('every built-in widget satisfies the contract and is translated', () => {
     assert.ok(def.styleUrl?.endsWith('.css'), `${def.type}: styleUrl`);
   }
 });
+
+test('v1 contract: titles exist in every locale, styles come from the widget folder', () => {
+  const tables = Object.entries(messages).map(([code, tree]) => [code, flattenMessages(tree)]);
+  for (const def of BUILT_IN_WIDGETS) {
+    for (const [code, table] of tables) assert.ok(table.has(def.titleKey), `${def.type}: ${def.titleKey} missing in ${code}`);
+    // styleUrl = new URL('./x.css', import.meta.url) — 다른 위젯·외부 출처의 CSS를 불러오지 않음
+    assert.ok(def.styleUrl.includes(`/src/widgets/${def.type}/`), `${def.type}: styleUrl outside its folder`);
+  }
+});
+
+test('styleUrl, when given, must be a .css URL', () => {
+  assert.deepEqual(validateWidgetDefinition({ ...valid(), styleUrl: 'https://example.com/a.css?v=1' }), []);
+  assert.equal(validateWidgetDefinition({ ...valid(), styleUrl: './a.js' }).length, 1);
+  assert.equal(validateWidgetDefinition({ ...valid(), styleUrl: 42 }).length, 1);
+});

@@ -1,11 +1,14 @@
 /**
  * 위젯 레지스트리 — 코어는 이 모듈을 통해서만 위젯을 안다 (ADR-0003).
+ * 아래 WidgetDefinition·WidgetContext·WidgetInstance가 v1 공개 계약이다 (ADR-0011, TRD 2.2).
  *
  * @typedef {{
  *   state: any,
  *   setState: (next: any | ((prev: any) => any)) => void,
  *   t: (key: string, params?: Record<string, string | number>) => string,
+ *   locale: string,
  * }} WidgetContext
+ * locale: 현재 UI 언어 코드(예: 'en', 'ja') — Intl 날짜·숫자 형식용. 언어가 바뀌면 위젯을 다시 mount하므로 고정값 (v1.0 추가)
  *
  * openSettings가 있으면 캔버스가 제목 막대에 설정 버튼을 표시한다.
  * @typedef {{ update: (state: any) => void, destroy: () => void, openSettings?: () => void }} WidgetInstance
@@ -60,6 +63,9 @@ export function validateWidgetDefinition(def) {
   }
   if (def.version > 1 && typeof def.migrate !== 'function') {
     errors.push(`${name}: migrate is required when version > 1`);
+  }
+  if (def.styleUrl !== undefined && (typeof def.styleUrl !== 'string' || !/\.css(?:[?#].*)?$/.test(def.styleUrl))) {
+    errors.push(`${name}: styleUrl must be a .css URL`);
   }
   return errors;
 }

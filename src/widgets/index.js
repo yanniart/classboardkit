@@ -14,6 +14,7 @@ import image from './image/index.js';
 import noise from './noise/index.js';
 import qr from './qr/index.js';
 import symbols from './symbols/index.js';
+// new-widget:imports — tools/new-widget.mjs가 이 줄 위에 import를 추가한다
 
 /** 기본 제공 위젯 — 배열 순서가 독 표시 순서 */
 export const BUILT_IN_WIDGETS = [
@@ -32,6 +33,7 @@ export const BUILT_IN_WIDGETS = [
   draw,
   image,
   qr,
+  // new-widget:list — tools/new-widget.mjs가 이 줄 위에 추가한다 (독 맨 끝)
 ];
 
 export function createDefaultRegistry() {

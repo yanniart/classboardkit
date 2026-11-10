@@ -1,6 +1,6 @@
 ---
-name: 버그 리포트
-about: 오동작 신고
+name: Bug / 버그
+about: Something does not work as expected / 오동작 신고
 labels: type:bug
 ---
 

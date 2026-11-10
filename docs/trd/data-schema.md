@@ -2,9 +2,11 @@
 
 | status | version | updated | owner |
 |---|---|---|---|
-| draft | 0.5 | 2026-11-09 | @owner |
+| v1 | 1.0 | 2026-11-11 | @owner |
 
 현재 스키마 버전: **1**
+
+> **v1 공개 계약** ([ADR-0011](adr/ADR-0011-v1-public-contract.md)): 내보내기 형식(§1~§5), 공유 링크 `1.`(§1.1), 저장 키(§6)는 v1.x 동안 하위 호환. 변경은 선택 필드 추가만 (§7·§8에 기록)
 
 ## 1. 내보내기 파일 (`*.classboardkit.json`)
 
@@ -135,6 +137,7 @@ IndexedDB (M4): DB `classboardkit`, 저장소 `assets` (keyPath `id`) — `{ id,
 
 | 스키마 | 날짜 | 내용 |
 |---|---|---|
+| 1 | 2026-11-11 (M7) | **v1 공개 계약으로 고정** (ADR-0011) — 형식 변화 없음 |
 | 1 | 2026-11-04 | 최초 정의 |
 | 1 | 2026-11-05 | Settings 선택 필드 `lastExportAt`·`keepAwake` 추가 (버전 유지), 내보내기 파일명·가져오기 규칙 명시 |
 | 1 | 2026-11-09 (M6) | 위젯 `symbols` state, Board 선택 필드 `widgetStyle` 추가 (버전 유지 — 이전 앱은 필드를 무시) |

@@ -11,7 +11,7 @@
   - 대상: 해외 포함 누구나, 기기: 노트북·태블릿(터치)
   - 런타임 외부 라이브러리 0 (도입 시 ADR + 벤더링)
 - **git 커밋·푸시·태그는 사용자가 요청할 때만**. 원격: `origin` = https://github.com/yanniart/classboardkit (공개), `main` 푸시 = Pages 자동 배포 → https://yanniart.github.io/classboardkit/
-- 이 PC에 `gh` CLI 없음 → GitHub 웹 작업(Release·Settings·Labels)은 사용자에게 요청. 공개 API(curl)로 Actions 상태 확인 가능:
+- **`gh` CLI 2.103.3 설치됨** (2026-11-10, winget, `yanniart`로 로그인, scope `repo`). 이 세션 PATH에 없을 수 있음 → Bash `"/c/Program Files/GitHub CLI/gh.exe"`. 로그인이 풀리면 백그라운드로 `printf '\n' | gh auth login --web` 실행 후 출력된 기기 코드를 사용자에게 전달 (`!` 셸은 대화형 입력 불가). Release 만들기처럼 공개 게시는 권한 확인이 뜰 수 있음 — 사용자에게 명령을 안내. 공개 API(curl)로 Actions 상태 확인도 가능:
   `curl -s "https://api.github.com/repos/yanniart/classboardkit/actions/runs?per_page=3"`
 - 계획에 없는 선택은 권장안으로 정하고 진행 → devlog "결정 사항"에 기록 (사용자가 권장안 위임을 선호, 2026-11-05)
 - 마일스톤마다: 단위 테스트 + 브라우저 E2E + 스크린샷 확인 → 문서 갱신(ROADMAP·devlog·CHANGELOG·README·TRD/스키마·QA)
@@ -22,19 +22,18 @@
   - 기준선: 단위 **236개**, E2E m1 **34** · m2 **36** · m3 **43**(환경에 따라 44) · m4 **72** · m5 **68** · m6 **58** · m7 **26** (로컬·배포 URL 모두 통과, m6 = 40개 상태 axe 위반 0, m7 = 4개 언어 넘침 0), Lighthouse(배포) 100/100/100, 첫 로드 gzip 158.2KB
   - 릴리스 노트 `docs/releases/v0.1.0.md`~`v0.5.0.md`, 개발 로그 `docs/devlog/2026/`
 - 배포 URL 검증: `E2E_URL=<pages url> node tools/e2e/m1.mjs` 등(m1~m7), `tools/e2e/pwa-remote.mjs`. 여러 개를 연달아 돌릴 때는 로그를 파일로 남길 것 (M6에서 결과 없이 끝난 실행 1회, 원인 미확인)
-- 사용자 작업 대기: 라벨 `type:translation`(번역 이슈 양식용), GitHub Release 페이지(v0.2.0~v0.5.0, 본문 = `docs/releases/*.md`), Labels·Milestones
+- GitHub: 라벨 `type:*`·`area:*` 9개, 마일스톤 M0~M7(M0~M6 닫힘, M7 열림, 기한 11-24) 생성 (2026-11-10). Release v0.1.0~v0.5.0 (본문 = `docs/releases/*.md`, `gh release create`는 `.claude/settings.local.json`에서 허용)
 - 미완료: 실기기 QA(qa-checklist 8~11절 — iPad·Safari·Firefox, QR 스캔, 메신저 공유, NVDA·VoiceOver·Windows 고대비), es·ja 원어민 검토(12절), 서비스명 상표 확인
 - 브랜치: `main` + **`m7`(유지 — v0.5.0 병합 후 3-5부터 이어서, v1.0.0 때 다시 병합, M7 D9)**
 
-## ▶ 다음 작업: M7 (생태계 → v0.5.0 → v1.0.0)
-- 계획서: [docs/roadmap/M7-plan.md](docs/roadmap/M7-plan.md) (결정 D1~D9 = 권장안)
-- **1부(3-0~3-4) 완료·v0.5.0 출시** (devlog `2026-11-10-m7.md`)
-- **사용자가 "m7 진행해줘"라고 하면 확인 질문 없이 바로 시작**:
-  1. `git status` 깨끗한지 → `git switch m7` (main과 같은 커밋인지 확인) → 단위 236 → 8765 서버 백그라운드 → E2E m1~m7 기준선 (로그를 파일로)
-  2. 계획서 3-5 → 3-7 (계약 감사·기여 가이드·위젯 생성기·ADR-0011 → v1.0.0), 끝나면 보고하고 **v1.0.0 출시는 사용자 요청 시**
-  3. 계획에 없는 선택은 권장안 → devlog "결정 사항" (번역 용어집도 devlog에)
-- 이월 검토: 위젯별 강조색 (M6 D6에서 보드 단위로 한정) — M7 범위 아님
-- 커밋·병합·푸시(배포)·태그는 **사용자가 요청할 때만** (한 메시지로 "커밋·병합·배포·문서·태그"를 모두 요청하면 이어서 진행해도 됨)
+## ▶ 다음 작업: M7 완료 → v1.0.0 출시 대기
+- 계획서: [docs/roadmap/M7-plan.md](docs/roadmap/M7-plan.md), devlog `2026-11-10-m7.md`(1부)·`2026-11-11-m7.md`(2부)
+- **3-0~3-7 완료** (`m7` 브랜치, 커밋 전). 버전 1.0.0, 릴리스 노트 `docs/releases/v1.0.0.md`("검증" 줄은 출시 때 채움)
+- **사용자가 출시를 요청하면** (M6·v0.5.0과 같은 흐름): 커밋 → `main` fast-forward 병합·푸시 → Actions 배포 확인(sw.js VERSION 1.0.0) → 배포 URL E2E m1~m7·pwa-remote(로그 파일) → Lighthouse → 출시 반영 문서 커밋·푸시 → `v1.0.0` 태그 → `gh release create` (Latest)
+- 사용자 승인 필요: 저장소 Settings → Private vulnerability reporting 켜기 (SECURITY.md 링크, 현재 꺼짐 — `gh api -X PUT repos/yanniart/classboardkit/private-vulnerability-reporting`)
+- v1 이후: ROADMAP "v1 이후" — patch/minor/major 규칙은 ADR-0011. **v1 계약(백업 형식·공유 링크·저장 키·위젯 계약·공개 모듈)을 깨는 변경 금지**
+- 이월 검토: 위젯별 강조색, 소리 재생 공개 모듈 승격
+- 커밋·병합·푸시(배포)·태그·Release는 **사용자가 요청할 때만** (한 메시지로 모두 요청하면 이어서 진행)
 
 ## 환경 (Windows)
 - **시스템에 Node.js 없음.** 포터블 Node를 `.tools/node/node.exe`(git 제외)에 둠
@@ -81,7 +80,8 @@ python -m http.server 8765 --bind 127.0.0.1          # 앱 서버 (백그라운�
 - `assets/symbols.svg` 활동 상징 12종 (48px, currentColor, 인라인 style 금지 — 테스트가 검사)
 - `src/widgets/<type>/` index.js(계약) + css + `*-logic.js`(순수). 등록: `src/widgets/index.js` 배열 1줄
 - `src/widgets/shared/` 설정 패널·입력 요소·명단 파서, `src/styles/widgets.css` 공통 위젯 스타일
-- 위젯 계약: TRD 2.2 (`setState`는 교체, `openSettings` 선택, 난수는 `core/utils/random.js`만)
+- 위젯 계약: TRD 2.2 = **v1 공개 계약**(ADR-0011). `setState`는 교체, `openSettings` 선택, 난수는 `core/utils/random.js`만, 언어는 `ctx.locale`. import는 공개 모듈만(`tests/widget-imports.test.js`)
+- 새 위젯: `node tools/new-widget.mjs <type>` (표식 주석 `// new-widget:` 위에 등록, 가이드 `docs/guides/new-widget.md`)
 - 새 문구는 `src/locales/` **4개 언어 모두**(en·es·ja·ko) → `tools/i18n-check.mjs`. 개수는 `{n}`, 영어·스페인어는 복수형 `{ one, other }`, ja·ko는 문자열 (TRD 5절)
 - 문서: `docs/README.md` 인덱스, PRD·TRD·data-schema·ADR·ROADMAP·QA·devlog
 
